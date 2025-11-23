@@ -177,12 +177,6 @@ def build_heap_with_visualization(sequence: List[int], output_dir: str):
     print(f"Building Min-Heap from sequence: {sequence}")
     print(f"{'='*60}\n")
     
-    # Visualize initial empty state
-    heap.visualize(
-        os.path.join(output_dir, "step_00_initial.png"),
-        "Initial State (Empty Heap)"
-    )
-    
     # Insert elements one by one and visualize
     for idx, value in enumerate(sequence):
         heap.insert(value)
