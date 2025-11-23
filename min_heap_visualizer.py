@@ -199,13 +199,14 @@ def build_heap_with_visualization(sequence: List[int], output_dir: str):
     return heap
 
 
-def demonstrate_operations(heap: MinHeap, output_dir: str):
+def demonstrate_operations(heap: MinHeap, output_dir: str, insert_value: int = 15):
     """
     Demonstrate deletion and insertion operations on the heap.
     
     Args:
         heap: The min-heap to operate on
         output_dir: Directory to save visualization images
+        insert_value: Value to insert in the insertion operation (default: 15)
     """
     print(f"\n{'='*60}")
     print("Demonstrating Operations")
@@ -223,14 +224,13 @@ def demonstrate_operations(heap: MinHeap, output_dir: str):
     )
     
     # Insertion operation
-    new_value = 15
-    print(f"\nInserting new value: {new_value}")
-    heap.insert(new_value)
+    print(f"\nInserting new value: {insert_value}")
+    heap.insert(insert_value)
     print("After insertion:", heap.heap)
     
     heap.visualize(
         os.path.join(output_dir, "operation_2_insert.png"),
-        f"After Insertion (added {new_value}) - Heap: {heap.heap}"
+        f"After Insertion (added {insert_value}) - Heap: {heap.heap}"
     )
     
     print(f"\n{'='*60}")
@@ -240,8 +240,9 @@ def demonstrate_operations(heap: MinHeap, output_dir: str):
 
 def main():
     """Main function to run the heap visualization."""
-    # Create output directory
-    output_dir = "/home/runner/work/1034569185/1034569185/image"
+    # Create output directory (relative to script location)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, "image")
     os.makedirs(output_dir, exist_ok=True)
     
     # Design an integer sequence with length >= 8
