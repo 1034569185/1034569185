@@ -17,7 +17,6 @@ class MinHeapHeapify:
     
     def __init__(self):
         self.heap = []
-        self.step_count = 0
     
     def parent(self, i: int) -> int:
         """Get parent index."""
@@ -62,10 +61,11 @@ class MinHeapHeapify:
             
             if swapped:
                 step_counter[0] += 1
+                # Values are already swapped, so show them in their new positions
                 filename = os.path.join(output_dir, f"{operation_name}_step_{step_counter[0]:02d}_swap_{from_idx}_{to_idx}.png")
-                title = f"{operation_name} - Step {step_counter[0]}: Swap positions {from_idx}↔{to_idx} (values {self.heap[from_idx]}↔{self.heap[to_idx]})\nHeap: {self.heap}"
+                title = f"{operation_name} - Step {step_counter[0]}: Swapped positions {from_idx}↔{to_idx}\nHeap: {self.heap}"
                 self.visualize(filename, title, highlight_nodes=[from_idx, to_idx])
-                print(f"  Step {step_counter[0]}: Swapped positions {from_idx}↔{to_idx} (values {self.heap[from_idx]}↔{self.heap[to_idx]})")
+                print(f"  Step {step_counter[0]}: Swapped positions {from_idx}↔{to_idx}")
                 current = to_idx
             else:
                 break
@@ -83,10 +83,11 @@ class MinHeapHeapify:
                 step_counter[0] += 1
                 self.heap[current], self.heap[parent_idx] = self.heap[parent_idx], self.heap[current]
                 
+                # Values are already swapped, so show them in their new positions
                 filename = os.path.join(output_dir, f"{operation_name}_step_{step_counter[0]:02d}_swap_{parent_idx}_{current}.png")
-                title = f"{operation_name} - Step {step_counter[0]}: Swap positions {parent_idx}↔{current} (values {self.heap[parent_idx]}↔{self.heap[current]})\nHeap: {self.heap}"
+                title = f"{operation_name} - Step {step_counter[0]}: Swapped positions {parent_idx}↔{current}\nHeap: {self.heap}"
                 self.visualize(filename, title, highlight_nodes=[parent_idx, current])
-                print(f"  Step {step_counter[0]}: Swapped positions {parent_idx}↔{current} (values {self.heap[parent_idx]}↔{self.heap[current]})")
+                print(f"  Step {step_counter[0]}: Swapped positions {parent_idx}↔{current}")
                 
                 current = parent_idx
             else:
@@ -137,9 +138,9 @@ class MinHeapHeapify:
                     sub_step += 1
                     step_num += 1
                     filename = os.path.join(output_dir, f"build_step_{step_num:02d}_heapify_at_{i}_substep_{sub_step}.png")
-                    title = f"Step {step_num}: Heapify at {i} - Swap positions {from_idx}↔{to_idx} (values {self.heap[from_idx]}↔{self.heap[to_idx]})\nHeap: {self.heap}"
+                    title = f"Step {step_num}: Heapify at {i} - Swapped positions {from_idx}↔{to_idx}\nHeap: {self.heap}"
                     self.visualize(filename, title, highlight_nodes=[from_idx, to_idx])
-                    print(f"  Swapped positions {from_idx}↔{to_idx} (values {self.heap[from_idx]}↔{self.heap[to_idx]})")
+                    print(f"  Swapped positions {from_idx}↔{to_idx}")
                     current = to_idx
                 else:
                     if heap_before == self.heap:
