@@ -113,6 +113,7 @@ class DirectedWeightedGraph:
         
         # Define visualization parameters
         NODE_SIZE = 2000
+        NODE_BORDER_WIDTH = 2.5
         EDGE_WIDTH = 2.5
         ARROW_SIZE = 25
         MARGIN = 15
@@ -122,7 +123,7 @@ class DirectedWeightedGraph:
                               node_color='lightblue',
                               node_size=NODE_SIZE,
                               edgecolors='black',
-                              linewidths=EDGE_WIDTH)
+                              linewidths=NODE_BORDER_WIDTH)
         
         # Draw edges with curved arrows for better visibility
         # Use connectionstyle to create curved edges
