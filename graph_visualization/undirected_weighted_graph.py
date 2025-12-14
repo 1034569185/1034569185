@@ -298,7 +298,7 @@ def main():
     graph = UndirectedWeightedGraph()
     
     # Define the graph structure (at least 4 vertices, at least 6 edges)
-    # Using 6 vertices and 8 edges for a more interesting graph
+    # Using 6 vertices and 10 edges for a more interesting graph
     edges = [
         ('A', 'B', 4),
         ('A', 'C', 2),
