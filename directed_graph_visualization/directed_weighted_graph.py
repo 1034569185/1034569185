@@ -447,21 +447,174 @@ class DirectedWeightedGraph:
         
         print(f"Saved inverse adjacency list: {output_file}")
     
+    def visualize_orthogonal_list_node_structure(self, output_file: str):
+        """Visualize the orthogonal linked list with actual node structure (十字链表)."""
+        sorted_vertices = sorted(self.vertices)
+        
+        fig, ax = plt.subplots(figsize=(18, 14))
+        ax.axis('off')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        
+        # Title
+        ax.text(0.5, 0.98, "Orthogonal Linked List - Node Structure (十字链表-节点结构)", 
+               ha='center', va='top',
+               fontsize=16, fontweight='bold',
+               transform=ax.transAxes)
+        
+        # Draw description
+        ax.text(0.5, 0.95, "Each edge node contains: tail vertex | head vertex | weight | next out-edge | next in-edge", 
+               ha='center', va='top',
+               fontsize=10, style='italic',
+               transform=ax.transAxes)
+        
+        n = len(sorted_vertices)
+        
+        # Vertex head nodes (array of vertex headers)
+        vertex_y = 0.90
+        vertex_spacing = 0.15
+        vertex_start_x = 0.05
+        
+        # Draw vertex header array
+        ax.text(0.02, vertex_y, "Vertex\nArray:", ha='center', va='center', 
+               fontsize=9, fontweight='bold', transform=ax.transAxes)
+        
+        vertex_positions = {}
+        for idx, vertex in enumerate(sorted_vertices):
+            x = vertex_start_x + idx * vertex_spacing
+            vertex_positions[vertex] = (x, vertex_y)
+            
+            # Vertex header node (contains firstout and firstin pointers)
+            # Format: [Vertex | firstout | firstin]
+            box_width = 0.12
+            box_height = 0.06
+            
+            # Draw vertex box
+            rect = plt.Rectangle((x, vertex_y - box_height/2), box_width, box_height,
+                                facecolor='lightblue', edgecolor='black', linewidth=2,
+                                transform=ax.transAxes)
+            ax.add_patch(rect)
+            
+            # Divide into 3 parts
+            part_width = box_width / 3
+            # Vertical dividers
+            ax.plot([x + part_width, x + part_width], 
+                   [vertex_y - box_height/2, vertex_y + box_height/2],
+                   'k-', linewidth=1.5, transform=ax.transAxes)
+            ax.plot([x + 2*part_width, x + 2*part_width], 
+                   [vertex_y - box_height/2, vertex_y + box_height/2],
+                   'k-', linewidth=1.5, transform=ax.transAxes)
+            
+            # Labels
+            ax.text(x + part_width/2, vertex_y, vertex, ha='center', va='center',
+                   fontsize=10, fontweight='bold', transform=ax.transAxes)
+            ax.text(x + part_width + part_width/2, vertex_y, "out", ha='center', va='center',
+                   fontsize=7, transform=ax.transAxes)
+            ax.text(x + 2*part_width + part_width/2, vertex_y, "in", ha='center', va='center',
+                   fontsize=7, transform=ax.transAxes)
+        
+        # Now draw edge nodes organized by vertex
+        edge_y_start = 0.78
+        edge_spacing_y = 0.12
+        
+        # Group edges by source vertex for outgoing edges
+        edge_nodes_drawn = []
+        
+        for v_idx, from_vertex in enumerate(sorted_vertices):
+            # Get all outgoing edges from this vertex
+            outgoing = [(from_vertex, to_v, self.graph[from_vertex][to_v]['weight']) 
+                       for to_v in self.graph.successors(from_vertex)]
+            
+            if outgoing:
+                outgoing.sort(key=lambda x: x[1])  # Sort by destination
+                
+                vx, vy = vertex_positions[from_vertex]
+                current_y = edge_y_start - v_idx * edge_spacing_y
+                
+                # Draw arrow from vertex header to first edge node
+                first_edge_x = vx + 0.18
+                ax.annotate('', xy=(first_edge_x, current_y), 
+                           xytext=(vx + 0.08, vy),
+                           arrowprops=dict(arrowstyle='->', color='blue', lw=1.5),
+                           transform=ax.transAxes)
+                
+                # Draw edge nodes in a row
+                for e_idx, (tail, head, weight) in enumerate(outgoing):
+                    edge_x = first_edge_x + e_idx * 0.22
+                    
+                    # Edge node format: [tail | head | weight | nextout | nextin]
+                    node_width = 0.20
+                    node_height = 0.05
+                    
+                    # Draw edge node box
+                    rect = plt.Rectangle((edge_x, current_y - node_height/2), node_width, node_height,
+                                        facecolor='lightyellow', edgecolor='black', linewidth=1.5,
+                                        transform=ax.transAxes)
+                    ax.add_patch(rect)
+                    
+                    # Divide into 5 parts
+                    part_width = node_width / 5
+                    for i in range(1, 5):
+                        ax.plot([edge_x + i*part_width, edge_x + i*part_width],
+                               [current_y - node_height/2, current_y + node_height/2],
+                               'k-', linewidth=1, transform=ax.transAxes)
+                    
+                    # Fill in values
+                    ax.text(edge_x + part_width/2, current_y, tail, ha='center', va='center',
+                           fontsize=8, fontweight='bold', transform=ax.transAxes)
+                    ax.text(edge_x + part_width + part_width/2, current_y, head, ha='center', va='center',
+                           fontsize=8, fontweight='bold', transform=ax.transAxes)
+                    ax.text(edge_x + 2*part_width + part_width/2, current_y, str(weight), ha='center', va='center',
+                           fontsize=8, color='red', fontweight='bold', transform=ax.transAxes)
+                    
+                    # Next out pointer
+                    if e_idx < len(outgoing) - 1:
+                        ax.text(edge_x + 3*part_width + part_width/2, current_y, "→", ha='center', va='center',
+                               fontsize=10, transform=ax.transAxes)
+                        # Draw arrow to next node
+                        next_edge_x = edge_x + 0.22
+                        ax.annotate('', xy=(next_edge_x, current_y),
+                                   xytext=(edge_x + node_width, current_y),
+                                   arrowprops=dict(arrowstyle='->', color='green', lw=1),
+                                   transform=ax.transAxes)
+                    else:
+                        ax.text(edge_x + 3*part_width + part_width/2, current_y, "^", ha='center', va='center',
+                               fontsize=8, color='gray', transform=ax.transAxes)
+                    
+                    # Next in pointer (simplified - just show symbol)
+                    ax.text(edge_x + 4*part_width + part_width/2, current_y, "↓", ha='center', va='center',
+                           fontsize=9, color='purple', transform=ax.transAxes)
+                    
+                    edge_nodes_drawn.append((tail, head, weight, edge_x, current_y))
+        
+        # Add legend
+        legend_y = 0.03
+        ax.text(0.05, legend_y + 0.03, "Legend:", fontsize=10, fontweight='bold', transform=ax.transAxes)
+        ax.text(0.05, legend_y, "→ (green): Next outgoing edge from same tail", fontsize=8, transform=ax.transAxes)
+        ax.text(0.35, legend_y, "↓ (purple): Next incoming edge to same head", fontsize=8, transform=ax.transAxes)
+        ax.text(0.65, legend_y, "^ (gray): NULL pointer", fontsize=8, transform=ax.transAxes)
+        
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=150, bbox_inches='tight')
+        plt.close()
+        
+        print(f"Saved orthogonal linked list (node structure): {output_file}")
+    
     def visualize_orthogonal_list(self, output_file: str):
-        """Visualize the orthogonal linked list (十字链表)."""
+        """Visualize the orthogonal linked list in matrix form (十字链表-矩阵形式)."""
         sorted_vertices = sorted(self.vertices)
         
         fig, ax = plt.subplots(figsize=(16, 12))
         ax.axis('off')
         
         # Title
-        ax.text(0.5, 0.97, "Orthogonal Linked List (十字链表)", 
+        ax.text(0.5, 0.97, "Orthogonal Linked List - Matrix View (十字链表-矩阵视图)", 
                ha='center', va='top',
                fontsize=18, fontweight='bold',
                transform=ax.transAxes)
         
         # Draw description
-        ax.text(0.5, 0.93, "Each vertex has: OUT edges (→) and IN edges (↓)", 
+        ax.text(0.5, 0.93, "Rows represent OUT edges (from vertex), Columns represent IN edges (to vertex)", 
                ha='center', va='top',
                fontsize=12, style='italic',
                transform=ax.transAxes)
@@ -558,7 +711,7 @@ class DirectedWeightedGraph:
         plt.savefig(output_file, dpi=150, bbox_inches='tight')
         plt.close()
         
-        print(f"Saved orthogonal linked list: {output_file}")
+        print(f"Saved orthogonal linked list (matrix view): {output_file}")
     
     def print_degrees(self):
         """Print vertex degrees to console."""
@@ -706,12 +859,16 @@ def main():
     # 5. Inverse adjacency list
     graph.visualize_inverse_adjacency_list(os.path.join(output_dir, "inverse_adjacency_list.png"))
     
-    # 6. Orthogonal linked list
-    graph.visualize_orthogonal_list(os.path.join(output_dir, "orthogonal_list.png"))
+    # 6. Orthogonal linked list - Node Structure (detailed representation)
+    graph.visualize_orthogonal_list_node_structure(os.path.join(output_dir, "orthogonal_list_nodes.png"))
+    
+    # 7. Orthogonal linked list - Matrix View (simplified representation)
+    graph.visualize_orthogonal_list(os.path.join(output_dir, "orthogonal_list_matrix.png"))
     
     print("\n" + "="*60)
     print("All visualizations completed!")
     print(f"Output directory: {output_dir}")
+    print(f"Generated 7 images (including 2 orthogonal list representations)")
     print("="*60 + "\n")
 
 

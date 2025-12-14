@@ -132,11 +132,26 @@ E ← C(w:6) ← D(w:3) ← NULL
 
 ## 十字链表 / Orthogonal Linked List
 
-十字链表是有向图的一种存储结构，同时存储每个顶点的出边和入边信息。
+十字链表是有向图的一种高效存储结构，同时存储每个顶点的出边和入边信息。本项目提供了两种可视化形式。
 
-The orthogonal linked list is a storage structure for directed graphs that stores both outgoing and incoming edge information for each vertex.
+The orthogonal linked list is an efficient storage structure for directed graphs that stores both outgoing and incoming edge information for each vertex. This project provides two visualization forms.
 
-**结构特点 / Structure Characteristics:**
+### 表示形式 1：节点结构 / Representation 1: Node Structure
+
+**真实的十字链表节点结构** / **True orthogonal list node structure**:
+- 每个边节点包含5个字段：tail顶点、head顶点、权重、下一个出边指针、下一个入边指针
+- Each edge node contains 5 fields: tail vertex, head vertex, weight, next-out pointer, next-in pointer
+- 顶点表：每个顶点存储第一个出边和第一个入边的指针
+- Vertex array: each vertex stores pointers to first outgoing and first incoming edge
+
+**图例 / Legend:**
+- **→ (绿色)**: 指向同一起点的下一条出边 / Points to next outgoing edge from same tail
+- **↓ (紫色)**: 指向同一终点的下一条入边 / Points to next incoming edge to same head  
+- **^ (灰色)**: 空指针 / NULL pointer
+
+### 表示形式 2：矩阵视图 / Representation 2: Matrix View
+
+**简化的矩阵表示** / **Simplified matrix representation**:
 - 行表示**出边**（从该顶点出发）/ Rows represent **outgoing edges** (from the vertex)
 - 列表示**入边**（到达该顶点）/ Columns represent **incoming edges** (to the vertex)
 - 每个位置显示边的权重或状态 / Each position shows edge weight or status
@@ -175,10 +190,15 @@ Shows the linked list structure of the adjacency list (outgoing edges) using box
 
 Shows the linked list structure of the inverse adjacency list (incoming edges) using boxes and arrows.
 
-### 6. orthogonal_list.png - 十字链表可视化 / Orthogonal Linked List Visualization
-以矩阵形式显示十字链表结构，同时表示出边和入边。
+### 6. orthogonal_list_nodes.png - 十字链表节点结构 / Orthogonal List - Node Structure
+显示真实的十字链表节点结构，包括边节点的5个字段和指针关系。
 
-Displays the orthogonal linked list structure in matrix form, representing both outgoing and incoming edges.
+Shows the true orthogonal linked list node structure with 5-field edge nodes and pointer relationships.
+
+### 7. orthogonal_list_matrix.png - 十字链表矩阵视图 / Orthogonal List - Matrix View
+以矩阵形式显示十字链表的简化表示，同时表示出边和入边。
+
+Displays a simplified matrix representation of the orthogonal linked list, showing both outgoing and incoming edges.
 
 ---
 
@@ -197,9 +217,9 @@ cd directed_graph_visualization
 python3 directed_weighted_graph.py
 ```
 
-程序将自动生成6张可视化图片。
+程序将自动生成7张可视化图片（包括2种十字链表表示）。
 
-The program will automatically generate 6 visualization images.
+The program will automatically generate 7 visualization images (including 2 orthogonal list representations).
 
 ---
 
@@ -214,7 +234,8 @@ directed_graph_visualization/
 ├── adjacency_matrix.png            # 邻接矩阵 / Adjacency matrix
 ├── adjacency_list.png              # 邻接表 / Adjacency list
 ├── inverse_adjacency_list.png      # 逆邻接表 / Inverse adjacency list
-└── orthogonal_list.png             # 十字链表 / Orthogonal linked list
+├── orthogonal_list_nodes.png       # 十字链表-节点结构 / Orthogonal list - node structure
+└── orthogonal_list_matrix.png      # 十字链表-矩阵视图 / Orthogonal list - matrix view
 ```
 
 ---
@@ -283,20 +304,22 @@ Directed weighted graphs can model:
 
 本项目成功实现了：
 ✅ 构建了包含5个顶点、8条有向边的带权有向图
-✅ 生成了有向图的可视化（带方向箭头）
+✅ 生成了有向图的可视化（带方向箭头和曲线边）
 ✅ 计算并显示了每个顶点的入度和出度
 ✅ 生成了邻接矩阵及其可视化（∞表示不可达，0表示自己到自己）
 ✅ 生成了邻接表及其可视化（出边）
 ✅ 生成了逆邻接表及其可视化（入边）
-✅ 生成了十字链表及其可视化
+✅ 生成了十字链表的两种可视化：节点结构和矩阵视图
 ✅ 所有文件保存在独立的 directed_graph_visualization 文件夹中
+✅ 共生成7张详细的可视化图片
 
 This project successfully implements:
 ✅ A directed weighted graph with 5 vertices and 8 directed edges
-✅ Directed graph visualization with directional arrows
+✅ Directed graph visualization with directional arrows and curved edges
 ✅ Calculation and display of in-degree and out-degree for each vertex
 ✅ Adjacency matrix and its visualization (∞ for unreachable, 0 for self)
 ✅ Adjacency list and its visualization (outgoing edges)
 ✅ Inverse adjacency list and its visualization (incoming edges)
-✅ Orthogonal linked list and its visualization
+✅ Two orthogonal linked list visualizations: node structure and matrix view
 ✅ All files saved in separate directed_graph_visualization folder
+✅ Total of 7 detailed visualization images generated
