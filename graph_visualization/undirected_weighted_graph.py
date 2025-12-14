@@ -42,16 +42,21 @@ class UndirectedWeightedGraph:
         sorted_vertices = sorted(self.vertices)
         n = len(sorted_vertices)
         
-        # Create matrix
-        matrix = np.zeros((n, n), dtype=int)
+        # Create matrix with infinity for non-reachable vertices
+        # Using float to accommodate infinity
+        matrix = np.full((n, n), np.inf, dtype=float)
         
         # Fill matrix with weights
         for i, v1 in enumerate(sorted_vertices):
             for j, v2 in enumerate(sorted_vertices):
-                if self.graph.has_edge(v1, v2):
+                if i == j:
+                    # Diagonal: self to self is 0
+                    matrix[i][j] = 0
+                elif self.graph.has_edge(v1, v2):
                     weight = self.graph[v1][v2]['weight']
                     matrix[i][j] = weight
                     matrix[j][i] = weight  # Symmetric for undirected graph
+                # else: remains infinity (no edge)
         
         return matrix, sorted_vertices
     
@@ -118,9 +123,14 @@ class UndirectedWeightedGraph:
         
         fig, ax = plt.subplots(figsize=(10, 10))
         
+        # Create a display matrix for coloring (replace inf with max+1 for color scale)
+        display_matrix = matrix.copy()
+        max_weight = np.max(matrix[~np.isinf(matrix)])  # Max finite weight
+        display_matrix[np.isinf(display_matrix)] = max_weight + 1
+        
         # Create a color map
         cmap = plt.cm.Blues
-        im = ax.imshow(matrix, cmap=cmap, aspect='auto')
+        im = ax.imshow(display_matrix, cmap=cmap, aspect='auto', vmin=0, vmax=max_weight)
         
         # Add colorbar
         cbar = plt.colorbar(im, ax=ax)
@@ -138,10 +148,20 @@ class UndirectedWeightedGraph:
         # Add text annotations
         for i in range(n):
             for j in range(n):
-                text = ax.text(j, i, int(matrix[i, j]),
-                             ha="center", va="center",
-                             color="black" if matrix[i, j] < matrix.max()/2 else "white",
-                             fontsize=14, fontweight='bold')
+                if np.isinf(matrix[i, j]):
+                    # Display infinity symbol for unreachable vertices
+                    text_str = "∞"
+                    text_color = "red"
+                else:
+                    # Display weight as integer
+                    text_str = str(int(matrix[i, j]))
+                    # Determine color based on value
+                    text_color = "black" if matrix[i, j] < max_weight/2 else "white"
+                
+                ax.text(j, i, text_str,
+                       ha="center", va="center",
+                       color=text_color,
+                       fontsize=14, fontweight='bold')
         
         ax.set_title("Adjacency Matrix", fontsize=16, fontweight='bold', pad=20)
         ax.set_xlabel("Vertices", fontsize=14, fontweight='bold')
@@ -260,7 +280,10 @@ class UndirectedWeightedGraph:
         for i, v in enumerate(vertices):
             print(f"{v:4}", end="")
             for j in range(len(vertices)):
-                print(f"{int(matrix[i][j]):4}", end="")
+                if np.isinf(matrix[i][j]):
+                    print(f"{'∞':>4}", end="")
+                else:
+                    print(f"{int(matrix[i][j]):4}", end="")
             print()
         
         print("="*60 + "\n")

@@ -43,24 +43,24 @@ The graph contains **10 edges** (meeting the requirement of at least 6 edges):
 
 ## 邻接矩阵 / Adjacency Matrix
 
-邻接矩阵是一个 6×6 的矩阵，其中元素 matrix[i][j] 表示顶点 i 和顶点 j 之间边的权重。如果两个顶点之间没有边，则值为 0。
+邻接矩阵是一个 6×6 的矩阵，其中元素 matrix[i][j] 表示顶点 i 和顶点 j 之间边的权重。如果两个顶点之间没有边，则值为 ∞（无穷）。
 
-The adjacency matrix is a 6×6 matrix where element matrix[i][j] represents the weight of the edge between vertex i and vertex j. If there is no edge, the value is 0.
+The adjacency matrix is a 6×6 matrix where element matrix[i][j] represents the weight of the edge between vertex i and vertex j. If there is no edge, the value is ∞ (infinity).
 
 ```
      A   B   C   D   E   F   
-A    0   4   2   7   0   0
-B    4   0   1   0   5   0
-C    2   1   0   3   8   0
-D    7   0   3   0   6   4
-E    0   5   8   6   0   2
-F    0   0   0   4   2   0
+A    0   4   2   7   ∞   ∞
+B    4   0   1   ∞   5   ∞
+C    2   1   0   3   8   ∞
+D    7   ∞   3   0   6   4
+E    ∞   5   8   6   0   2
+F    ∞   ∞   ∞   4   2   0
 ```
 
 **特点 / Characteristics:**
 - 对称矩阵（因为是无向图）/ Symmetric matrix (because it's an undirected graph)
 - 主对角线全为 0（没有自环）/ Main diagonal is all 0 (no self-loops)
-- 非零元素表示边的权重 / Non-zero elements represent edge weights
+- 边权重用数字表示，不可达用 ∞ 表示 / Edge weights shown as numbers, unreachable vertices shown as ∞
 
 ---
 
