@@ -111,25 +111,31 @@ class DirectedWeightedGraph:
         # Use spring layout for better visualization
         pos = nx.spring_layout(self.graph, seed=42, k=2, iterations=50)
         
+        # Define visualization parameters
+        NODE_SIZE = 2000
+        EDGE_WIDTH = 2.5
+        ARROW_SIZE = 25
+        MARGIN = 15
+        
         # Draw nodes
         nx.draw_networkx_nodes(self.graph, pos, 
                               node_color='lightblue',
-                              node_size=2000,
+                              node_size=NODE_SIZE,
                               edgecolors='black',
-                              linewidths=2.5)
+                              linewidths=EDGE_WIDTH)
         
         # Draw edges with curved arrows for better visibility
         # Use connectionstyle to create curved edges
         nx.draw_networkx_edges(self.graph, pos,
-                              width=2.5,
+                              width=EDGE_WIDTH,
                               edge_color='darkblue',
                               arrows=True,
-                              arrowsize=25,
+                              arrowsize=ARROW_SIZE,
                               arrowstyle='->',
                               connectionstyle='arc3,rad=0.1',  # Curved edges
-                              node_size=2000,
-                              min_source_margin=15,
-                              min_target_margin=15)
+                              node_size=NODE_SIZE,
+                              min_source_margin=MARGIN,
+                              min_target_margin=MARGIN)
         
         # Draw labels
         nx.draw_networkx_labels(self.graph, pos,
