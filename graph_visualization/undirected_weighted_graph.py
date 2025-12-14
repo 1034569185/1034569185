@@ -125,7 +125,11 @@ class UndirectedWeightedGraph:
         
         # Create a display matrix for coloring (replace inf with max+1 for color scale)
         display_matrix = matrix.copy()
-        max_weight = np.max(matrix[~np.isinf(matrix)])  # Max finite weight
+        finite_values = matrix[~np.isinf(matrix)]
+        if len(finite_values) > 0:
+            max_weight = np.max(finite_values)  # Max finite weight
+        else:
+            max_weight = 1  # Default if all values are infinity
         display_matrix[np.isinf(display_matrix)] = max_weight + 1
         
         # Create a color map
