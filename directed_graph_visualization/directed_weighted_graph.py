@@ -105,7 +105,7 @@ class DirectedWeightedGraph:
         return inv_adj_list
     
     def visualize_directed_graph(self, output_file: str):
-        """Visualize the directed weighted graph."""
+        """Visualize the directed weighted graph with clear arrows and curved edges."""
         plt.figure(figsize=(14, 10))
         
         # Use spring layout for better visualization
@@ -114,30 +114,39 @@ class DirectedWeightedGraph:
         # Draw nodes
         nx.draw_networkx_nodes(self.graph, pos, 
                               node_color='lightblue',
-                              node_size=1500,
+                              node_size=2000,
                               edgecolors='black',
-                              linewidths=2)
+                              linewidths=2.5)
         
-        # Draw edges with arrows
+        # Draw edges with curved arrows for better visibility
+        # Use connectionstyle to create curved edges
         nx.draw_networkx_edges(self.graph, pos,
-                              width=2,
-                              edge_color='gray',
+                              width=2.5,
+                              edge_color='darkblue',
                               arrows=True,
-                              arrowsize=20,
-                              arrowstyle='->')
+                              arrowsize=25,
+                              arrowstyle='->',
+                              connectionstyle='arc3,rad=0.1',  # Curved edges
+                              node_size=2000,
+                              min_source_margin=15,
+                              min_target_margin=15)
         
         # Draw labels
         nx.draw_networkx_labels(self.graph, pos,
-                               font_size=16,
+                               font_size=18,
                                font_weight='bold')
         
-        # Draw edge labels (weights)
+        # Draw edge labels (weights) with better positioning
         edge_labels = nx.get_edge_attributes(self.graph, 'weight')
         nx.draw_networkx_edge_labels(self.graph, pos,
                                      edge_labels,
-                                     font_size=12,
+                                     font_size=14,
                                      font_color='red',
-                                     font_weight='bold')
+                                     font_weight='bold',
+                                     bbox=dict(boxstyle='round,pad=0.3', 
+                                             facecolor='white', 
+                                             edgecolor='none',
+                                             alpha=0.7))
         
         plt.title("Directed Weighted Graph", fontsize=18, fontweight='bold', pad=20)
         plt.axis('off')
