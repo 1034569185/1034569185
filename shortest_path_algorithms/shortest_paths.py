@@ -4,7 +4,6 @@ Implements Dijkstra and Floyd algorithms with step-by-step visualization
 """
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Tuple, Set
@@ -312,9 +311,11 @@ class WeightedDirectedGraph:
             # Try using vertex k as intermediate vertex
             for i in range(n):
                 for j in range(n):
-                    if dist[i][k] + dist[k][j] < dist[i][j]:
-                        dist[i][j] = dist[i][k] + dist[k][j]
-                        next_vertex[i][j] = next_vertex[i][k]
+                    # Check for infinity to avoid overflow
+                    if dist[i][k] != float('inf') and dist[k][j] != float('inf'):
+                        if dist[i][k] + dist[k][j] < dist[i][j]:
+                            dist[i][j] = dist[i][k] + dist[k][j]
+                            next_vertex[i][j] = next_vertex[i][k]
             
             # Record step
             steps.append({
