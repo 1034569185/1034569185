@@ -62,6 +62,7 @@ class TextReader:
         'last_file': '',
         'last_position': 0,
         'auto_scroll_speed': 50,
+        'ui_scale': 1.0,
         'bookmarks': {},
         'recent_files': []
     }
@@ -104,10 +105,14 @@ class TextReader:
         self.search_matches = []
         self.current_match_index = -1
         self.search_frame_visible = False
+        self.search_job = None  # For debounced search
         
         # Table of contents (chapters)
         self.chapters = []
         self.toc_visible = False
+        
+        # UI Scale factor
+        self.ui_scale = self.settings.get('ui_scale', 1.0)
         
         # Setup UI
         self.setup_ui()
@@ -157,6 +162,9 @@ class TextReader:
         # Configure root window
         self.root.geometry(f"{self.settings['window_width']}x{self.settings['window_height']}")
         self.root.minsize(600, 400)
+        
+        # Setup ttk style with scaled fonts
+        self.setup_styles()
         
         # Main container
         self.main_frame = ttk.Frame(self.root)
@@ -212,6 +220,31 @@ class TextReader:
         self.progress_label = ttk.Label(self.status_frame, text="")
         self.progress_label.pack(side=tk.RIGHT, padx=10, pady=5)
     
+    def setup_styles(self):
+        """Setup ttk styles with UI scaling."""
+        self.style = ttk.Style()
+        
+        # Calculate scaled font size (base size is 10)
+        base_font_size = int(10 * self.ui_scale)
+        button_font_size = int(10 * self.ui_scale)
+        
+        # Configure default font for all ttk widgets
+        default_font = ('Microsoft YaHei UI', base_font_size)
+        button_font = ('Microsoft YaHei UI', button_font_size)
+        
+        # Configure ttk styles
+        self.style.configure('.', font=default_font)
+        self.style.configure('TLabel', font=default_font, padding=2)
+        self.style.configure('TButton', font=button_font, padding=4)
+        self.style.configure('TCheckbutton', font=default_font)
+        self.style.configure('TRadiobutton', font=default_font)
+        self.style.configure('TEntry', font=default_font, padding=2)
+        self.style.configure('TCombobox', font=default_font)
+        self.style.configure('TSpinbox', font=default_font)
+        
+        # Configure menu font
+        self.menu_font = ('Microsoft YaHei UI', base_font_size)
+    
     def setup_search_bar(self):
         """Setup the search bar UI."""
         self.search_frame = ttk.Frame(self.main_frame)
@@ -241,14 +274,16 @@ class TextReader:
     
     def setup_toc_panel(self):
         """Setup the Table of Contents sidebar."""
-        self.toc_frame = ttk.Frame(self.content_frame, width=250)
+        toc_width = int(250 * self.ui_scale)
+        self.toc_frame = ttk.Frame(self.content_frame, width=toc_width)
         # Not packed initially - shown when user clicks TOC button
         
         # TOC header
         toc_header = ttk.Frame(self.toc_frame)
         toc_header.pack(fill=tk.X, pady=5)
         
-        ttk.Label(toc_header, text="📚 目录", font=('', 11, 'bold')).pack(side=tk.LEFT, padx=10)
+        toc_title_font_size = int(12 * self.ui_scale)
+        ttk.Label(toc_header, text="📚 目录", font=('Microsoft YaHei UI', toc_title_font_size, 'bold')).pack(side=tk.LEFT, padx=10)
         ttk.Button(toc_header, text="✕", width=3, command=self.toggle_toc).pack(side=tk.RIGHT, padx=5)
         
         # Refresh button
@@ -263,10 +298,11 @@ class TextReader:
         toc_scrollbar = ttk.Scrollbar(toc_list_frame)
         toc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
+        toc_font_size = int(11 * self.ui_scale)
         self.toc_listbox = tk.Listbox(
             toc_list_frame,
             yscrollcommand=toc_scrollbar.set,
-            font=('', 10),
+            font=('Microsoft YaHei UI', toc_font_size),
             selectmode=tk.SINGLE,
             activestyle='none'
         )
@@ -359,17 +395,21 @@ class TextReader:
     
     def setup_menu(self):
         """Setup the menu bar."""
-        self.menubar = tk.Menu(self.root)
+        # Menu font
+        menu_font_size = int(10 * self.ui_scale)
+        menu_font = ('Microsoft YaHei UI', menu_font_size)
+        
+        self.menubar = tk.Menu(self.root, font=menu_font)
         self.root.config(menu=self.menubar)
         
         # File menu
-        file_menu = tk.Menu(self.menubar, tearoff=0)
+        file_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="文件", menu=file_menu)
         file_menu.add_command(label="打开...", command=self.open_file, accelerator="Ctrl+O")
         file_menu.add_separator()
         
         # Recent files submenu
-        self.recent_menu = tk.Menu(file_menu, tearoff=0)
+        self.recent_menu = tk.Menu(file_menu, tearoff=0, font=menu_font)
         file_menu.add_cascade(label="最近文件", menu=self.recent_menu)
         self.update_recent_menu()
         
@@ -377,7 +417,7 @@ class TextReader:
         file_menu.add_command(label="退出", command=self.on_close, accelerator="Alt+F4")
         
         # View menu
-        view_menu = tk.Menu(self.menubar, tearoff=0)
+        view_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="视图", menu=view_menu)
         view_menu.add_command(label="增大字号", command=self.increase_font_size, accelerator="Ctrl++")
         view_menu.add_command(label="减小字号", command=self.decrease_font_size, accelerator="Ctrl+-")
@@ -388,14 +428,14 @@ class TextReader:
         view_menu.add_command(label="显示/隐藏目录", command=self.toggle_toc, accelerator="Ctrl+L")
         
         # Edit menu (for search)
-        edit_menu = tk.Menu(self.menubar, tearoff=0)
+        edit_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="编辑", menu=edit_menu)
         edit_menu.add_command(label="查找...", command=self.show_search, accelerator="Ctrl+F")
         edit_menu.add_command(label="查找下一个", command=self.find_next, accelerator="F3")
         edit_menu.add_command(label="查找上一个", command=self.find_previous, accelerator="Shift+F3")
         
         # Navigate menu
-        nav_menu = tk.Menu(self.menubar, tearoff=0)
+        nav_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="导航", menu=nav_menu)
         nav_menu.add_command(label="跳转到开头", command=self.goto_start, accelerator="Home")
         nav_menu.add_command(label="跳转到结尾", command=self.goto_end, accelerator="End")
@@ -408,18 +448,19 @@ class TextReader:
         nav_menu.add_command(label="管理书签...", command=self.manage_bookmarks)
         
         # Settings menu
-        settings_menu = tk.Menu(self.menubar, tearoff=0)
+        settings_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="设置", menu=settings_menu)
         settings_menu.add_command(label="字体设置...", command=self.open_font_settings)
         settings_menu.add_command(label="颜色设置...", command=self.open_color_settings)
         settings_menu.add_separator()
         settings_menu.add_command(label="行间距设置...", command=self.open_line_spacing_settings)
         settings_menu.add_command(label="自动滚动速度...", command=self.open_scroll_speed_settings)
+        settings_menu.add_command(label="界面缩放...", command=self.open_ui_scale_settings)
         settings_menu.add_separator()
         settings_menu.add_command(label="恢复默认设置", command=self.reset_settings)
         
         # Help menu
-        help_menu = tk.Menu(self.menubar, tearoff=0)
+        help_menu = tk.Menu(self.menubar, tearoff=0, font=menu_font)
         self.menubar.add_cascade(label="帮助", menu=help_menu)
         help_menu.add_command(label="快捷键列表", command=self.show_shortcuts)
         help_menu.add_separator()
@@ -586,11 +627,18 @@ class TextReader:
             self.exit_fullscreen()
     
     def on_search_change(self):
-        """Called when search text changes."""
-        self.perform_search()
+        """Called when search text changes. Uses debounce to avoid freeze."""
+        # Cancel previous scheduled search
+        if self.search_job:
+            self.root.after_cancel(self.search_job)
+        
+        # Schedule new search after 300ms delay (debounce)
+        # This prevents freezing when typing Chinese with IME
+        self.search_job = self.root.after(300, self.perform_search)
     
     def perform_search(self):
         """Perform the search and highlight all matches."""
+        self.search_job = None  # Clear the job reference
         self.clear_search_highlights()
         self.search_matches = []
         self.current_match_index = -1
@@ -603,33 +651,48 @@ class TextReader:
         # Get text content
         content = self.text_widget.get("1.0", tk.END)
         
-        # Search options
+        # Use simple string find instead of regex for better performance
+        # This is faster especially for Chinese text
         if self.case_sensitive_var.get():
-            flags = 0
+            search_content = content
+            search_pattern = search_text
         else:
-            flags = re.IGNORECASE
+            search_content = content.lower()
+            search_pattern = search_text.lower()
         
-        # Find all matches
-        try:
-            pattern = re.compile(re.escape(search_text), flags)
-            for match in pattern.finditer(content):
-                start_idx = f"1.0+{match.start()}c"
-                end_idx = f"1.0+{match.end()}c"
-                self.search_matches.append((start_idx, end_idx))
-                self.text_widget.tag_add('search_highlight', start_idx, end_idx)
-        except re.error:
-            pass
+        # Find all matches using string find (much faster than regex)
+        start = 0
+        pattern_len = len(search_text)
+        
+        while True:
+            pos = search_content.find(search_pattern, start)
+            if pos == -1:
+                break
+            
+            start_idx = f"1.0+{pos}c"
+            end_idx = f"1.0+{pos + pattern_len}c"
+            self.search_matches.append((start_idx, end_idx))
+            self.text_widget.tag_add('search_highlight', start_idx, end_idx)
+            
+            start = pos + 1
+            
+            # Limit matches to prevent UI freeze on very large files
+            if len(self.search_matches) >= 1000:
+                break
         
         # Update count label
         count = len(self.search_matches)
         if count == 0:
             self.search_count_label.config(text="未找到")
+        elif count >= 1000:
+            self.search_count_label.config(text=f"找到 1000+ 个匹配")
         else:
             self.search_count_label.config(text=f"找到 {count} 个匹配")
-            # Auto-jump to first match
-            if count > 0:
-                self.current_match_index = 0
-                self.highlight_current_match()
+        
+        # Auto-jump to first match
+        if count > 0:
+            self.current_match_index = 0
+            self.highlight_current_match()
     
     def clear_search_highlights(self):
         """Clear all search highlights."""
@@ -1221,6 +1284,60 @@ class TextReader:
         ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
         ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
     
+    def open_ui_scale_settings(self):
+        """Open UI scale settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("界面缩放设置")
+        dialog.geometry("400x220")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="界面缩放比例:").pack(pady=10)
+        
+        # Use DoubleVar for float values
+        scale_var = tk.DoubleVar(value=self.ui_scale)
+        scale_slider = ttk.Scale(dialog, from_=0.8, to=2.0, orient=tk.HORIZONTAL, variable=scale_var, length=300)
+        scale_slider.pack(pady=5)
+        
+        value_label = ttk.Label(dialog, text=f"{self.ui_scale:.1f}x ({int(self.ui_scale * 100)}%)")
+        value_label.pack(pady=5)
+        
+        # Preset buttons
+        preset_frame = ttk.Frame(dialog)
+        preset_frame.pack(pady=10)
+        
+        ttk.Label(preset_frame, text="快速选择: ").pack(side=tk.LEFT, padx=5)
+        for preset in [1.0, 1.25, 1.5, 1.75, 2.0]:
+            ttk.Button(
+                preset_frame, 
+                text=f"{int(preset * 100)}%", 
+                command=lambda p=preset: scale_var.set(p),
+                width=6
+            ).pack(side=tk.LEFT, padx=2)
+        
+        # Description
+        desc_label = ttk.Label(dialog, text="提示: 缩放后需要重启应用才能完全生效")
+        desc_label.pack(pady=5)
+        
+        def update_label(*args):
+            val = scale_var.get()
+            value_label.config(text=f"{val:.1f}x ({int(val * 100)}%)")
+        
+        scale_var.trace('w', update_label)
+        
+        def apply_changes():
+            new_scale = round(scale_var.get(), 2)
+            self.settings['ui_scale'] = new_scale
+            self.ui_scale = new_scale
+            self.save_settings()
+            messagebox.showinfo("提示", "界面缩放设置已保存。\n请重启应用以应用新的缩放比例。")
+            dialog.destroy()
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
     def reset_settings(self):
         """Reset all settings to default."""
         if messagebox.askyesno("确认", "确定要恢复默认设置吗？"):
@@ -1268,7 +1385,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.2.0
+版本: 1.3.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -1285,6 +1402,7 @@ TextReader 文本阅读器
 • 4K/高DPI屏幕支持
 • 快速查找功能
 • 自动目录导航
+• 界面缩放（80%-200%）
 
 © 2024 TextReader
         """
