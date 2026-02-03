@@ -12,13 +12,37 @@ Features:
 - Bookmarks
 - Fullscreen mode
 - Auto-scroll feature
+- High-DPI/4K display support
 """
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, colorchooser, font as tkfont
 import json
 import os
+import sys
+import ctypes
 from pathlib import Path
+
+
+def enable_high_dpi_awareness():
+    """
+    Enable High-DPI awareness for Windows to fix blurry display on 4K screens.
+    This must be called BEFORE creating any Tkinter windows.
+    """
+    if sys.platform == 'win32':
+        try:
+            # For Windows 10 version 1607+ (Anniversary Update)
+            # PROCESS_PER_MONITOR_DPI_AWARE = 2
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except AttributeError:
+            try:
+                # For older Windows versions
+                ctypes.windll.user32.SetProcessDPIAware()
+            except AttributeError:
+                pass
+        except OSError:
+            # Already set or not supported
+            pass
 
 
 class TextReader:
@@ -912,7 +936,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.0.0
+版本: 1.1.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -926,6 +950,7 @@ TextReader 文本阅读器
 • 书签功能
 • 自动滚动
 • 全屏阅读模式
+• 4K/高DPI屏幕支持
 
 © 2024 TextReader
         """
@@ -942,7 +967,26 @@ TextReader 文本阅读器
 
 def main():
     """Main entry point."""
+    # Enable High-DPI awareness BEFORE creating Tk window
+    # This fixes blurry display on 4K/High-DPI screens
+    enable_high_dpi_awareness()
+    
     root = tk.Tk()
+    
+    # Additional DPI scaling for Tkinter on Windows
+    # Note: Only apply additional scaling on Windows where we've set DPI awareness
+    # Linux/Mac typically handle DPI scaling at the system level
+    try:
+        if sys.platform == 'win32':
+            # Get DPI from Windows
+            dpi = ctypes.windll.user32.GetDpiForSystem()
+            # Standard DPI is 96, calculate scale factor
+            scale_factor = dpi / 96.0
+            if scale_factor > 1.0:
+                # Scale all Tkinter elements proportionally
+                root.tk.call('tk', 'scaling', scale_factor)
+    except Exception:
+        pass  # Continue without scaling if it fails
     
     # Set icon if available (optional)
     try:
