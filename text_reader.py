@@ -1,0 +1,918 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+TextReader - A Simple and Elegant Text Reader Application
+Similar to NeatReader, designed for comfortable reading experience.
+
+Features:
+- Support for TXT and other text-based formats
+- Customizable fonts (family, size, style)
+- Customizable background and text colors
+- Reading progress tracking
+- Bookmarks
+- Fullscreen mode
+- Auto-scroll feature
+"""
+
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox, colorchooser, font as tkfont
+import json
+import os
+from pathlib import Path
+
+
+class TextReader:
+    """Main TextReader application class."""
+    
+    # Default settings
+    DEFAULT_SETTINGS = {
+        'font_family': 'SimSun',
+        'font_size': 16,
+        'font_weight': 'normal',
+        'text_color': '#333333',
+        'bg_color': '#F5F5DC',
+        'line_spacing': 10,
+        'window_width': 900,
+        'window_height': 700,
+        'last_file': '',
+        'last_position': 0,
+        'bookmarks': {},
+        'recent_files': []
+    }
+    
+    # Predefined color themes
+    THEMES = {
+        '护眼绿': {'bg': '#CCE8CF', 'text': '#333333'},
+        '羊皮纸': {'bg': '#F5F5DC', 'text': '#333333'},
+        '夜间模式': {'bg': '#1E1E1E', 'text': '#E0E0E0'},
+        '暖白色': {'bg': '#FFF8E7', 'text': '#333333'},
+        '淡蓝色': {'bg': '#E6F3FF', 'text': '#333333'},
+        '纯白色': {'bg': '#FFFFFF', 'text': '#000000'},
+        '深棕色': {'bg': '#3E2723', 'text': '#D7CCC8'},
+        '海洋蓝': {'bg': '#0D47A1', 'text': '#E3F2FD'},
+    }
+    
+    def __init__(self, root):
+        """Initialize the TextReader application."""
+        self.root = root
+        self.root.title("TextReader - 文本阅读器")
+        
+        # Settings file path
+        self.settings_file = Path.home() / '.textreader_settings.json'
+        
+        # Load settings
+        self.settings = self.load_settings()
+        
+        # Current file info
+        self.current_file = None
+        self.current_content = ""
+        
+        # Auto-scroll state
+        self.auto_scroll_active = False
+        self.auto_scroll_speed = 50  # milliseconds between scroll
+        
+        # Setup UI
+        self.setup_ui()
+        self.setup_menu()
+        self.setup_bindings()
+        
+        # Apply settings
+        self.apply_settings()
+        
+        # Load last file if exists
+        if self.settings.get('last_file') and os.path.exists(self.settings['last_file']):
+            self.load_file(self.settings['last_file'])
+    
+    def load_settings(self):
+        """Load settings from file or use defaults."""
+        try:
+            if self.settings_file.exists():
+                with open(self.settings_file, 'r', encoding='utf-8') as f:
+                    settings = json.load(f)
+                    # Merge with defaults for any missing keys
+                    for key, value in self.DEFAULT_SETTINGS.items():
+                        if key not in settings:
+                            settings[key] = value
+                    return settings
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+        return self.DEFAULT_SETTINGS.copy()
+    
+    def save_settings(self):
+        """Save current settings to file."""
+        try:
+            # Save current text position
+            if self.current_file:
+                self.settings['last_file'] = self.current_file
+                self.settings['last_position'] = self.text_widget.yview()[0]
+            
+            with open(self.settings_file, 'w', encoding='utf-8') as f:
+                json.dump(self.settings, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Error saving settings: {e}")
+    
+    def setup_ui(self):
+        """Setup the main UI components."""
+        # Configure root window
+        self.root.geometry(f"{self.settings['window_width']}x{self.settings['window_height']}")
+        self.root.minsize(600, 400)
+        
+        # Main container
+        self.main_frame = ttk.Frame(self.root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Toolbar
+        self.setup_toolbar()
+        
+        # Text area with scrollbar
+        self.text_frame = ttk.Frame(self.main_frame)
+        self.text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Scrollbar
+        self.scrollbar = ttk.Scrollbar(self.text_frame)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Text widget
+        self.text_widget = tk.Text(
+            self.text_frame,
+            wrap=tk.WORD,
+            yscrollcommand=self.scrollbar.set,
+            state=tk.DISABLED,
+            cursor="arrow",
+            relief=tk.FLAT,
+            padx=40,
+            pady=20
+        )
+        self.text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        self.scrollbar.config(command=self.text_widget.yview)
+        
+        # Status bar
+        self.status_frame = ttk.Frame(self.root)
+        self.status_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        self.status_label = ttk.Label(self.status_frame, text="欢迎使用 TextReader！请打开一个文件开始阅读。")
+        self.status_label.pack(side=tk.LEFT, padx=10, pady=5)
+        
+        self.progress_label = ttk.Label(self.status_frame, text="")
+        self.progress_label.pack(side=tk.RIGHT, padx=10, pady=5)
+    
+    def setup_toolbar(self):
+        """Setup the toolbar with quick actions."""
+        self.toolbar = ttk.Frame(self.main_frame)
+        self.toolbar.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Open button
+        ttk.Button(self.toolbar, text="📂 打开", command=self.open_file).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        # Font size controls
+        ttk.Label(self.toolbar, text="字号:").pack(side=tk.LEFT, padx=2)
+        
+        self.font_size_var = tk.StringVar(value=str(self.settings['font_size']))
+        self.font_size_spinbox = ttk.Spinbox(
+            self.toolbar,
+            from_=8,
+            to=72,
+            width=5,
+            textvariable=self.font_size_var,
+            command=self.on_font_size_change
+        )
+        self.font_size_spinbox.pack(side=tk.LEFT, padx=2)
+        self.font_size_spinbox.bind('<Return>', lambda e: self.on_font_size_change())
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        # Font family dropdown
+        ttk.Label(self.toolbar, text="字体:").pack(side=tk.LEFT, padx=2)
+        
+        self.available_fonts = sorted(set(tkfont.families()))
+        self.font_family_var = tk.StringVar(value=self.settings['font_family'])
+        self.font_combobox = ttk.Combobox(
+            self.toolbar,
+            textvariable=self.font_family_var,
+            values=self.available_fonts,
+            width=15,
+            state='readonly'
+        )
+        self.font_combobox.pack(side=tk.LEFT, padx=2)
+        self.font_combobox.bind('<<ComboboxSelected>>', lambda e: self.on_font_change())
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        # Theme dropdown
+        ttk.Label(self.toolbar, text="主题:").pack(side=tk.LEFT, padx=2)
+        
+        self.theme_var = tk.StringVar(value='羊皮纸')
+        self.theme_combobox = ttk.Combobox(
+            self.toolbar,
+            textvariable=self.theme_var,
+            values=list(self.THEMES.keys()),
+            width=10,
+            state='readonly'
+        )
+        self.theme_combobox.pack(side=tk.LEFT, padx=2)
+        self.theme_combobox.bind('<<ComboboxSelected>>', lambda e: self.apply_theme())
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        # Custom color buttons
+        ttk.Button(self.toolbar, text="🎨 背景", command=self.choose_bg_color).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.toolbar, text="🖌️ 文字", command=self.choose_text_color).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        # Auto-scroll toggle
+        self.auto_scroll_btn = ttk.Button(self.toolbar, text="▶ 自动滚动", command=self.toggle_auto_scroll)
+        self.auto_scroll_btn.pack(side=tk.LEFT, padx=2)
+        
+        # Fullscreen button
+        ttk.Button(self.toolbar, text="⛶ 全屏", command=self.toggle_fullscreen).pack(side=tk.RIGHT, padx=2)
+    
+    def setup_menu(self):
+        """Setup the menu bar."""
+        self.menubar = tk.Menu(self.root)
+        self.root.config(menu=self.menubar)
+        
+        # File menu
+        file_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="文件", menu=file_menu)
+        file_menu.add_command(label="打开...", command=self.open_file, accelerator="Ctrl+O")
+        file_menu.add_separator()
+        
+        # Recent files submenu
+        self.recent_menu = tk.Menu(file_menu, tearoff=0)
+        file_menu.add_cascade(label="最近文件", menu=self.recent_menu)
+        self.update_recent_menu()
+        
+        file_menu.add_separator()
+        file_menu.add_command(label="退出", command=self.on_close, accelerator="Alt+F4")
+        
+        # View menu
+        view_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="视图", menu=view_menu)
+        view_menu.add_command(label="增大字号", command=self.increase_font_size, accelerator="Ctrl++")
+        view_menu.add_command(label="减小字号", command=self.decrease_font_size, accelerator="Ctrl+-")
+        view_menu.add_separator()
+        view_menu.add_command(label="全屏模式", command=self.toggle_fullscreen, accelerator="F11")
+        view_menu.add_command(label="隐藏工具栏", command=self.toggle_toolbar, accelerator="Ctrl+T")
+        
+        # Navigate menu
+        nav_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="导航", menu=nav_menu)
+        nav_menu.add_command(label="跳转到开头", command=self.goto_start, accelerator="Home")
+        nav_menu.add_command(label="跳转到结尾", command=self.goto_end, accelerator="End")
+        nav_menu.add_separator()
+        nav_menu.add_command(label="跳转到位置...", command=self.goto_position, accelerator="Ctrl+G")
+        nav_menu.add_separator()
+        nav_menu.add_command(label="添加书签", command=self.add_bookmark, accelerator="Ctrl+B")
+        nav_menu.add_command(label="管理书签...", command=self.manage_bookmarks)
+        
+        # Settings menu
+        settings_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="设置", menu=settings_menu)
+        settings_menu.add_command(label="字体设置...", command=self.open_font_settings)
+        settings_menu.add_command(label="颜色设置...", command=self.open_color_settings)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="行间距设置...", command=self.open_line_spacing_settings)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="恢复默认设置", command=self.reset_settings)
+        
+        # Help menu
+        help_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="帮助", menu=help_menu)
+        help_menu.add_command(label="快捷键列表", command=self.show_shortcuts)
+        help_menu.add_separator()
+        help_menu.add_command(label="关于", command=self.show_about)
+    
+    def setup_bindings(self):
+        """Setup keyboard shortcuts and event bindings."""
+        # File operations
+        self.root.bind('<Control-o>', lambda e: self.open_file())
+        
+        # Font size
+        self.root.bind('<Control-plus>', lambda e: self.increase_font_size())
+        self.root.bind('<Control-minus>', lambda e: self.decrease_font_size())
+        self.root.bind('<Control-equal>', lambda e: self.increase_font_size())
+        
+        # Navigation
+        self.root.bind('<Home>', lambda e: self.goto_start())
+        self.root.bind('<End>', lambda e: self.goto_end())
+        self.root.bind('<Control-g>', lambda e: self.goto_position())
+        self.root.bind('<Control-b>', lambda e: self.add_bookmark())
+        
+        # View
+        self.root.bind('<F11>', lambda e: self.toggle_fullscreen())
+        self.root.bind('<Escape>', lambda e: self.exit_fullscreen())
+        self.root.bind('<Control-t>', lambda e: self.toggle_toolbar())
+        
+        # Scrolling
+        self.root.bind('<space>', lambda e: self.page_down())
+        self.root.bind('<Prior>', lambda e: self.page_up())
+        self.root.bind('<Next>', lambda e: self.page_down())
+        self.root.bind('<Up>', lambda e: self.scroll_up())
+        self.root.bind('<Down>', lambda e: self.scroll_down())
+        
+        # Window close
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        
+        # Track scroll for progress
+        self.text_widget.bind('<MouseWheel>', lambda e: self.root.after(100, self.update_progress))
+        self.scrollbar.bind('<ButtonRelease-1>', lambda e: self.root.after(100, self.update_progress))
+    
+    def apply_settings(self):
+        """Apply current settings to the UI."""
+        # Configure font
+        font_config = (
+            self.settings['font_family'],
+            self.settings['font_size'],
+            self.settings['font_weight']
+        )
+        
+        self.text_widget.configure(
+            font=font_config,
+            bg=self.settings['bg_color'],
+            fg=self.settings['text_color'],
+            spacing3=self.settings['line_spacing'],
+            insertbackground=self.settings['text_color']
+        )
+        
+        # Update toolbar values
+        self.font_size_var.set(str(self.settings['font_size']))
+        self.font_family_var.set(self.settings['font_family'])
+    
+    def open_file(self):
+        """Open a file dialog to select a text file."""
+        filetypes = [
+            ('文本文件', '*.txt'),
+            ('所有文件', '*.*'),
+            ('Markdown文件', '*.md'),
+            ('HTML文件', '*.html *.htm'),
+            ('日志文件', '*.log'),
+        ]
+        
+        filepath = filedialog.askopenfilename(
+            title="选择要打开的文件",
+            filetypes=filetypes
+        )
+        
+        if filepath:
+            self.load_file(filepath)
+    
+    def load_file(self, filepath):
+        """Load and display a text file."""
+        try:
+            # Try different encodings
+            content = None
+            encodings = ['utf-8', 'gbk', 'gb2312', 'gb18030', 'big5', 'latin-1']
+            
+            for encoding in encodings:
+                try:
+                    with open(filepath, 'r', encoding=encoding) as f:
+                        content = f.read()
+                    break
+                except UnicodeDecodeError:
+                    continue
+            
+            if content is None:
+                raise ValueError("无法识别文件编码")
+            
+            self.current_file = filepath
+            self.current_content = content
+            
+            # Update text widget
+            self.text_widget.configure(state=tk.NORMAL)
+            self.text_widget.delete(1.0, tk.END)
+            self.text_widget.insert(tk.END, content)
+            self.text_widget.configure(state=tk.DISABLED)
+            
+            # Update title
+            filename = os.path.basename(filepath)
+            self.root.title(f"TextReader - {filename}")
+            
+            # Update status
+            line_count = content.count('\n') + 1
+            char_count = len(content)
+            self.status_label.config(text=f"已打开: {filename} | {line_count} 行 | {char_count} 字符")
+            
+            # Restore position if available
+            if filepath in self.settings.get('bookmarks', {}):
+                pos = self.settings['bookmarks'][filepath].get('position', 0)
+                self.text_widget.yview_moveto(pos)
+            
+            # Add to recent files
+            self.add_to_recent(filepath)
+            
+            # Update progress
+            self.update_progress()
+            
+        except Exception as e:
+            messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
+    
+    def add_to_recent(self, filepath):
+        """Add file to recent files list."""
+        recent = self.settings.get('recent_files', [])
+        
+        # Remove if already exists
+        if filepath in recent:
+            recent.remove(filepath)
+        
+        # Add to front
+        recent.insert(0, filepath)
+        
+        # Keep only last 10
+        self.settings['recent_files'] = recent[:10]
+        
+        # Update menu
+        self.update_recent_menu()
+    
+    def update_recent_menu(self):
+        """Update the recent files menu."""
+        self.recent_menu.delete(0, tk.END)
+        
+        recent = self.settings.get('recent_files', [])
+        
+        if not recent:
+            self.recent_menu.add_command(label="(无最近文件)", state=tk.DISABLED)
+        else:
+            for filepath in recent:
+                if os.path.exists(filepath):
+                    filename = os.path.basename(filepath)
+                    self.recent_menu.add_command(
+                        label=filename,
+                        command=lambda f=filepath: self.load_file(f)
+                    )
+    
+    def update_progress(self):
+        """Update reading progress display."""
+        if self.current_file:
+            position = self.text_widget.yview()
+            progress = int(position[0] * 100)
+            self.progress_label.config(text=f"阅读进度: {progress}%")
+    
+    def on_font_size_change(self):
+        """Handle font size change from spinbox."""
+        try:
+            size = int(self.font_size_var.get())
+            if 8 <= size <= 72:
+                self.settings['font_size'] = size
+                self.apply_settings()
+        except ValueError:
+            pass
+    
+    def on_font_change(self):
+        """Handle font family change."""
+        self.settings['font_family'] = self.font_family_var.get()
+        self.apply_settings()
+    
+    def increase_font_size(self):
+        """Increase font size by 2."""
+        new_size = min(72, self.settings['font_size'] + 2)
+        self.settings['font_size'] = new_size
+        self.font_size_var.set(str(new_size))
+        self.apply_settings()
+    
+    def decrease_font_size(self):
+        """Decrease font size by 2."""
+        new_size = max(8, self.settings['font_size'] - 2)
+        self.settings['font_size'] = new_size
+        self.font_size_var.set(str(new_size))
+        self.apply_settings()
+    
+    def choose_bg_color(self):
+        """Open color picker for background."""
+        color = colorchooser.askcolor(
+            color=self.settings['bg_color'],
+            title="选择背景颜色"
+        )
+        if color[1]:
+            self.settings['bg_color'] = color[1]
+            self.apply_settings()
+    
+    def choose_text_color(self):
+        """Open color picker for text."""
+        color = colorchooser.askcolor(
+            color=self.settings['text_color'],
+            title="选择文字颜色"
+        )
+        if color[1]:
+            self.settings['text_color'] = color[1]
+            self.apply_settings()
+    
+    def apply_theme(self):
+        """Apply selected theme."""
+        theme_name = self.theme_var.get()
+        if theme_name in self.THEMES:
+            theme = self.THEMES[theme_name]
+            self.settings['bg_color'] = theme['bg']
+            self.settings['text_color'] = theme['text']
+            self.apply_settings()
+    
+    def toggle_fullscreen(self):
+        """Toggle fullscreen mode."""
+        is_fullscreen = self.root.attributes('-fullscreen')
+        self.root.attributes('-fullscreen', not is_fullscreen)
+        
+        if not is_fullscreen:
+            # Hide toolbar in fullscreen
+            self.toolbar.pack_forget()
+            self.status_frame.pack_forget()
+        else:
+            # Show toolbar when exiting fullscreen
+            self.toolbar.pack(fill=tk.X, padx=5, pady=5, before=self.text_frame)
+            self.status_frame.pack(fill=tk.X, side=tk.BOTTOM)
+    
+    def exit_fullscreen(self):
+        """Exit fullscreen mode."""
+        if self.root.attributes('-fullscreen'):
+            self.toggle_fullscreen()
+    
+    def toggle_toolbar(self):
+        """Toggle toolbar visibility."""
+        if self.toolbar.winfo_viewable():
+            self.toolbar.pack_forget()
+        else:
+            self.toolbar.pack(fill=tk.X, padx=5, pady=5, before=self.text_frame)
+    
+    def toggle_auto_scroll(self):
+        """Toggle auto-scroll feature."""
+        self.auto_scroll_active = not self.auto_scroll_active
+        
+        if self.auto_scroll_active:
+            self.auto_scroll_btn.config(text="⏸ 停止滚动")
+            self.do_auto_scroll()
+        else:
+            self.auto_scroll_btn.config(text="▶ 自动滚动")
+    
+    def do_auto_scroll(self):
+        """Perform auto-scroll."""
+        if self.auto_scroll_active:
+            self.text_widget.yview_scroll(1, 'units')
+            self.update_progress()
+            self.root.after(self.auto_scroll_speed, self.do_auto_scroll)
+    
+    def scroll_up(self):
+        """Scroll up by one line."""
+        self.text_widget.yview_scroll(-1, 'units')
+        self.update_progress()
+    
+    def scroll_down(self):
+        """Scroll down by one line."""
+        self.text_widget.yview_scroll(1, 'units')
+        self.update_progress()
+    
+    def page_up(self):
+        """Scroll up by one page."""
+        self.text_widget.yview_scroll(-1, 'pages')
+        self.update_progress()
+    
+    def page_down(self):
+        """Scroll down by one page."""
+        self.text_widget.yview_scroll(1, 'pages')
+        self.update_progress()
+    
+    def goto_start(self):
+        """Go to the beginning of the document."""
+        self.text_widget.yview_moveto(0)
+        self.update_progress()
+    
+    def goto_end(self):
+        """Go to the end of the document."""
+        self.text_widget.yview_moveto(1)
+        self.update_progress()
+    
+    def goto_position(self):
+        """Open dialog to jump to a specific position."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("跳转到位置")
+        dialog.geometry("300x100")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="输入百分比位置 (0-100):").pack(pady=10)
+        
+        entry = ttk.Entry(dialog)
+        entry.pack(pady=5)
+        entry.focus()
+        
+        def do_goto():
+            try:
+                pos = int(entry.get()) / 100
+                pos = max(0, min(1, pos))
+                self.text_widget.yview_moveto(pos)
+                self.update_progress()
+                dialog.destroy()
+            except ValueError:
+                messagebox.showerror("错误", "请输入有效的数字")
+        
+        ttk.Button(dialog, text="跳转", command=do_goto).pack(pady=5)
+        entry.bind('<Return>', lambda e: do_goto())
+    
+    def add_bookmark(self):
+        """Add a bookmark at current position."""
+        if not self.current_file:
+            messagebox.showinfo("提示", "请先打开一个文件")
+            return
+        
+        position = self.text_widget.yview()[0]
+        
+        if 'bookmarks' not in self.settings:
+            self.settings['bookmarks'] = {}
+        
+        self.settings['bookmarks'][self.current_file] = {
+            'position': position,
+            'name': f"书签 - {int(position * 100)}%"
+        }
+        
+        self.status_label.config(text=f"书签已添加 ({int(position * 100)}%)")
+    
+    def manage_bookmarks(self):
+        """Open bookmark manager dialog."""
+        if not self.settings.get('bookmarks'):
+            messagebox.showinfo("提示", "暂无书签")
+            return
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title("书签管理")
+        dialog.geometry("400x300")
+        dialog.transient(self.root)
+        
+        # Listbox for bookmarks
+        listbox = tk.Listbox(dialog, selectmode=tk.SINGLE)
+        listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        bookmark_files = []
+        for filepath, bookmark in self.settings['bookmarks'].items():
+            filename = os.path.basename(filepath)
+            pos = int(bookmark['position'] * 100)
+            listbox.insert(tk.END, f"{filename} - {pos}%")
+            bookmark_files.append(filepath)
+        
+        def goto_bookmark():
+            selection = listbox.curselection()
+            if selection:
+                filepath = bookmark_files[selection[0]]
+                if os.path.exists(filepath):
+                    self.load_file(filepath)
+                    pos = self.settings['bookmarks'][filepath]['position']
+                    self.text_widget.yview_moveto(pos)
+                    self.update_progress()
+                dialog.destroy()
+        
+        def delete_bookmark():
+            selection = listbox.curselection()
+            if selection:
+                filepath = bookmark_files[selection[0]]
+                del self.settings['bookmarks'][filepath]
+                listbox.delete(selection[0])
+                bookmark_files.pop(selection[0])
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        ttk.Button(btn_frame, text="跳转", command=goto_bookmark).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="删除", command=delete_bookmark).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="关闭", command=dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def open_font_settings(self):
+        """Open font settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("字体设置")
+        dialog.geometry("350x250")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Font family
+        ttk.Label(dialog, text="字体:").grid(row=0, column=0, padx=10, pady=10, sticky='e')
+        font_var = tk.StringVar(value=self.settings['font_family'])
+        font_combo = ttk.Combobox(dialog, textvariable=font_var, values=self.available_fonts, width=20)
+        font_combo.grid(row=0, column=1, padx=10, pady=10)
+        
+        # Font size
+        ttk.Label(dialog, text="字号:").grid(row=1, column=0, padx=10, pady=10, sticky='e')
+        size_var = tk.StringVar(value=str(self.settings['font_size']))
+        size_spin = ttk.Spinbox(dialog, from_=8, to=72, width=10, textvariable=size_var)
+        size_spin.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+        
+        # Font weight
+        ttk.Label(dialog, text="粗细:").grid(row=2, column=0, padx=10, pady=10, sticky='e')
+        weight_var = tk.StringVar(value=self.settings['font_weight'])
+        weight_combo = ttk.Combobox(dialog, textvariable=weight_var, values=['normal', 'bold'], width=10)
+        weight_combo.grid(row=2, column=1, padx=10, pady=10, sticky='w')
+        
+        # Preview
+        preview_frame = ttk.LabelFrame(dialog, text="预览")
+        preview_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky='ew')
+        
+        preview_label = ttk.Label(preview_frame, text="示例文字 Sample Text 123")
+        preview_label.pack(padx=10, pady=10)
+        
+        def update_preview(*args):
+            try:
+                preview_label.configure(font=(font_var.get(), int(size_var.get()), weight_var.get()))
+            except Exception:
+                pass
+        
+        font_var.trace('w', update_preview)
+        size_var.trace('w', update_preview)
+        weight_var.trace('w', update_preview)
+        update_preview()
+        
+        def apply_changes():
+            try:
+                self.settings['font_family'] = font_var.get()
+                self.settings['font_size'] = int(size_var.get())
+                self.settings['font_weight'] = weight_var.get()
+                self.font_size_var.set(str(self.settings['font_size']))
+                self.font_family_var.set(self.settings['font_family'])
+                self.apply_settings()
+                dialog.destroy()
+            except ValueError:
+                messagebox.showerror("错误", "请输入有效的字号")
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.grid(row=4, column=0, columnspan=2, pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def open_color_settings(self):
+        """Open color settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("颜色设置")
+        dialog.geometry("350x200")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Background color
+        ttk.Label(dialog, text="背景颜色:").grid(row=0, column=0, padx=10, pady=10, sticky='e')
+        bg_var = tk.StringVar(value=self.settings['bg_color'])
+        bg_entry = ttk.Entry(dialog, textvariable=bg_var, width=15)
+        bg_entry.grid(row=0, column=1, padx=5, pady=10)
+        
+        def pick_bg():
+            color = colorchooser.askcolor(color=bg_var.get())[1]
+            if color:
+                bg_var.set(color)
+        
+        ttk.Button(dialog, text="选择...", command=pick_bg).grid(row=0, column=2, padx=5, pady=10)
+        
+        # Text color
+        ttk.Label(dialog, text="文字颜色:").grid(row=1, column=0, padx=10, pady=10, sticky='e')
+        text_var = tk.StringVar(value=self.settings['text_color'])
+        text_entry = ttk.Entry(dialog, textvariable=text_var, width=15)
+        text_entry.grid(row=1, column=1, padx=5, pady=10)
+        
+        def pick_text():
+            color = colorchooser.askcolor(color=text_var.get())[1]
+            if color:
+                text_var.set(color)
+        
+        ttk.Button(dialog, text="选择...", command=pick_text).grid(row=1, column=2, padx=5, pady=10)
+        
+        # Preview
+        preview_frame = ttk.LabelFrame(dialog, text="预览")
+        preview_frame.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky='ew')
+        
+        preview_label = tk.Label(preview_frame, text="示例文字预览", padx=20, pady=10)
+        preview_label.pack(fill=tk.X)
+        
+        def update_preview(*args):
+            try:
+                preview_label.configure(bg=bg_var.get(), fg=text_var.get())
+            except Exception:
+                pass
+        
+        bg_var.trace('w', update_preview)
+        text_var.trace('w', update_preview)
+        update_preview()
+        
+        def apply_changes():
+            self.settings['bg_color'] = bg_var.get()
+            self.settings['text_color'] = text_var.get()
+            self.apply_settings()
+            dialog.destroy()
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.grid(row=3, column=0, columnspan=3, pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def open_line_spacing_settings(self):
+        """Open line spacing settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("行间距设置")
+        dialog.geometry("300x150")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="行间距 (像素):").pack(pady=10)
+        
+        spacing_var = tk.IntVar(value=self.settings['line_spacing'])
+        scale = ttk.Scale(dialog, from_=0, to=30, orient=tk.HORIZONTAL, variable=spacing_var, length=200)
+        scale.pack(pady=5)
+        
+        value_label = ttk.Label(dialog, text=f"{self.settings['line_spacing']} px")
+        value_label.pack(pady=5)
+        
+        def update_label(*args):
+            value_label.config(text=f"{spacing_var.get()} px")
+        
+        spacing_var.trace('w', update_label)
+        
+        def apply_changes():
+            self.settings['line_spacing'] = spacing_var.get()
+            self.apply_settings()
+            dialog.destroy()
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def reset_settings(self):
+        """Reset all settings to default."""
+        if messagebox.askyesno("确认", "确定要恢复默认设置吗？"):
+            self.settings = self.DEFAULT_SETTINGS.copy()
+            self.apply_settings()
+            self.theme_var.set('羊皮纸')
+    
+    def show_shortcuts(self):
+        """Show keyboard shortcuts."""
+        shortcuts = """
+快捷键列表:
+
+文件操作:
+  Ctrl+O          打开文件
+
+视图:
+  Ctrl+ +         增大字号
+  Ctrl+ -         减小字号
+  F11             全屏模式
+  Ctrl+T          隐藏/显示工具栏
+
+导航:
+  Home            跳转到开头
+  End             跳转到结尾
+  Ctrl+G          跳转到位置
+  Ctrl+B          添加书签
+  Space           下一页
+  Page Up         上一页
+  Page Down       下一页
+  ↑↓              上下滚动
+
+其他:
+  Escape          退出全屏
+        """
+        messagebox.showinfo("快捷键列表", shortcuts)
+    
+    def show_about(self):
+        """Show about dialog."""
+        about_text = """
+TextReader 文本阅读器
+
+版本: 1.0.0
+
+一个简洁优雅的文本阅读器，
+专为舒适阅读体验而设计。
+
+功能特点:
+• 支持 TXT 等多种文本格式
+• 自定义字体、字号
+• 多种护眼主题
+• 自定义背景和文字颜色
+• 阅读进度跟踪
+• 书签功能
+• 自动滚动
+• 全屏阅读模式
+
+© 2024 TextReader
+        """
+        messagebox.showinfo("关于 TextReader", about_text)
+    
+    def on_close(self):
+        """Handle window close event."""
+        # Save settings
+        self.save_settings()
+        
+        # Close window
+        self.root.destroy()
+
+
+def main():
+    """Main entry point."""
+    root = tk.Tk()
+    
+    # Set icon if available (optional)
+    try:
+        # Try to set a window icon
+        pass
+    except Exception:
+        pass
+    
+    app = TextReader(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

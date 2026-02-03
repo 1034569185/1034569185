@@ -1,0 +1,109 @@
+《示例小说》
+
+作者：匿名
+
+第一章 开始
+
+这是一个示例文本文件，用于测试 TextReader 文本阅读器的各项功能。
+
+TextReader 是一个简洁优雅的文本阅读器，专为舒适阅读体验而设计。它具有以下特点：
+
+1. 支持多种文本格式
+2. 自定义字体和字号
+3. 多种护眼主题
+4. 自定义背景和文字颜色
+5. 阅读进度跟踪
+6. 书签功能
+
+---
+
+第二章 功能介绍
+
+工具栏功能：
+- 打开文件：点击"打开"按钮选择要阅读的文件
+- 字号调节：使用数字框调整文字大小
+- 字体选择：从下拉菜单选择喜欢的字体
+- 主题切换：选择预设的护眼主题
+- 背景颜色：自定义阅读区域背景色
+- 文字颜色：自定义文字显示颜色
+- 自动滚动：开启后自动向下滚动
+- 全屏模式：进入沉浸式阅读
+
+快捷键：
+- Ctrl+O：打开文件
+- Ctrl++：增大字号
+- Ctrl+-：减小字号
+- F11：全屏切换
+- Ctrl+T：显示/隐藏工具栏
+- Home：跳到开头
+- End：跳到结尾
+- Ctrl+G：跳转到指定位置
+- Ctrl+B：添加书签
+- 空格键：下一页
+- Page Up/Down：翻页
+- 上下箭头：滚动
+
+---
+
+第三章 主题介绍
+
+TextReader 提供了多种预设主题：
+
+【护眼绿】
+绿色背景，有助于减轻眼睛疲劳，适合长时间阅读。
+
+【羊皮纸】
+模拟古老羊皮纸的颜色，给人一种阅读古典书籍的感觉。
+
+【夜间模式】
+深色背景配浅色文字，适合在黑暗环境下阅读，减少光线刺激。
+
+【暖白色】
+温暖的白色背景，介于纯白和米黄之间，柔和不刺眼。
+
+【淡蓝色】
+清新的淡蓝色背景，给人宁静的感觉。
+
+【纯白色】
+经典的黑字白底，与打印书籍类似。
+
+【深棕色】
+复古风格的深棕色，文艺气息浓厚。
+
+【海洋蓝】
+深蓝色背景，独特的阅读风格。
+
+---
+
+第四章 结语
+
+感谢您使用 TextReader 文本阅读器！
+
+这款应用使用 Python 和 Tkinter 开发，无需安装额外依赖，即可在 Windows、Mac 和 Linux 上运行。
+
+如果您有任何建议或问题，欢迎反馈！
+
+祝您阅读愉快！
+
+---
+
+附录：Lorem ipsum dolor sit amet
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+---
+
+附录：英文示例
+
+The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards jump quickly.
+
+---
+
+附录：数字和符号
+
+0123456789
+!@#$%^&*()_+-=[]{}|;':",./<>?
+
+---
+
+完
