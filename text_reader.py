@@ -21,6 +21,7 @@ import json
 import os
 import sys
 import ctypes
+import re
 from pathlib import Path
 
 
@@ -77,6 +78,9 @@ class TextReader:
         '海洋蓝': {'bg': '#0D47A1', 'text': '#E3F2FD'},
     }
     
+    # Maximum length for chapter title (to filter out false positives)
+    MAX_CHAPTER_TITLE_LENGTH = 50
+    
     def __init__(self, root):
         """Initialize the TextReader application."""
         self.root = root
@@ -95,6 +99,15 @@ class TextReader:
         # Auto-scroll state
         self.auto_scroll_active = False
         self.auto_scroll_speed = self.settings.get('auto_scroll_speed', 50)  # milliseconds between scroll
+        
+        # Search state
+        self.search_matches = []
+        self.current_match_index = -1
+        self.search_frame_visible = False
+        
+        # Table of contents (chapters)
+        self.chapters = []
+        self.toc_visible = False
         
         # Setup UI
         self.setup_ui()
@@ -152,9 +165,19 @@ class TextReader:
         # Toolbar
         self.setup_toolbar()
         
+        # Search bar (hidden by default)
+        self.setup_search_bar()
+        
+        # Content area with TOC and text
+        self.content_frame = ttk.Frame(self.main_frame)
+        self.content_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Table of Contents sidebar (hidden by default)
+        self.setup_toc_panel()
+        
         # Text area with scrollbar
-        self.text_frame = ttk.Frame(self.main_frame)
-        self.text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.text_frame = ttk.Frame(self.content_frame)
+        self.text_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Scrollbar
         self.scrollbar = ttk.Scrollbar(self.text_frame)
@@ -173,6 +196,10 @@ class TextReader:
         )
         self.text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
+        # Configure search highlight tag
+        self.text_widget.tag_configure('search_highlight', background='#FFFF00', foreground='#000000')
+        self.text_widget.tag_configure('current_match', background='#FF6B00', foreground='#FFFFFF')
+        
         self.scrollbar.config(command=self.text_widget.yview)
         
         # Status bar
@@ -184,6 +211,70 @@ class TextReader:
         
         self.progress_label = ttk.Label(self.status_frame, text="")
         self.progress_label.pack(side=tk.RIGHT, padx=10, pady=5)
+    
+    def setup_search_bar(self):
+        """Setup the search bar UI."""
+        self.search_frame = ttk.Frame(self.main_frame)
+        # Not packed initially - shown when user presses Ctrl+F
+        
+        ttk.Label(self.search_frame, text="🔍 查找:").pack(side=tk.LEFT, padx=5)
+        
+        self.search_var = tk.StringVar()
+        self.search_entry = ttk.Entry(self.search_frame, textvariable=self.search_var, width=30)
+        self.search_entry.pack(side=tk.LEFT, padx=2)
+        self.search_entry.bind('<Return>', lambda e: self.find_next())
+        self.search_entry.bind('<Escape>', lambda e: self.hide_search())
+        self.search_var.trace('w', lambda *args: self.on_search_change())
+        
+        ttk.Button(self.search_frame, text="上一个", command=self.find_previous).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.search_frame, text="下一个", command=self.find_next).pack(side=tk.LEFT, padx=2)
+        
+        self.search_count_label = ttk.Label(self.search_frame, text="")
+        self.search_count_label.pack(side=tk.LEFT, padx=10)
+        
+        # Case sensitive checkbox
+        self.case_sensitive_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(self.search_frame, text="区分大小写", variable=self.case_sensitive_var, 
+                       command=self.on_search_change).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(self.search_frame, text="✕", width=3, command=self.hide_search).pack(side=tk.RIGHT, padx=5)
+    
+    def setup_toc_panel(self):
+        """Setup the Table of Contents sidebar."""
+        self.toc_frame = ttk.Frame(self.content_frame, width=250)
+        # Not packed initially - shown when user clicks TOC button
+        
+        # TOC header
+        toc_header = ttk.Frame(self.toc_frame)
+        toc_header.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(toc_header, text="📚 目录", font=('', 11, 'bold')).pack(side=tk.LEFT, padx=10)
+        ttk.Button(toc_header, text="✕", width=3, command=self.toggle_toc).pack(side=tk.RIGHT, padx=5)
+        
+        # Refresh button
+        ttk.Button(toc_header, text="🔄", width=3, command=self.refresh_toc).pack(side=tk.RIGHT, padx=2)
+        
+        ttk.Separator(self.toc_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
+        
+        # TOC listbox with scrollbar
+        toc_list_frame = ttk.Frame(self.toc_frame)
+        toc_list_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        toc_scrollbar = ttk.Scrollbar(toc_list_frame)
+        toc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.toc_listbox = tk.Listbox(
+            toc_list_frame,
+            yscrollcommand=toc_scrollbar.set,
+            font=('', 10),
+            selectmode=tk.SINGLE,
+            activestyle='none'
+        )
+        self.toc_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.toc_listbox.bind('<Double-1>', self.on_toc_select)
+        self.toc_listbox.bind('<Return>', self.on_toc_select)
+        
+        toc_scrollbar.config(command=self.toc_listbox.yview)
     
     def setup_toolbar(self):
         """Setup the toolbar with quick actions."""
@@ -251,6 +342,14 @@ class TextReader:
         
         ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
         
+        # Search button
+        ttk.Button(self.toolbar, text="🔍 查找", command=self.show_search).pack(side=tk.LEFT, padx=2)
+        
+        # TOC button
+        ttk.Button(self.toolbar, text="📚 目录", command=self.toggle_toc).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Separator(self.toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
         # Auto-scroll toggle
         self.auto_scroll_btn = ttk.Button(self.toolbar, text="▶ 自动滚动", command=self.toggle_auto_scroll)
         self.auto_scroll_btn.pack(side=tk.LEFT, padx=2)
@@ -285,6 +384,15 @@ class TextReader:
         view_menu.add_separator()
         view_menu.add_command(label="全屏模式", command=self.toggle_fullscreen, accelerator="F11")
         view_menu.add_command(label="隐藏工具栏", command=self.toggle_toolbar, accelerator="Ctrl+T")
+        view_menu.add_separator()
+        view_menu.add_command(label="显示/隐藏目录", command=self.toggle_toc, accelerator="Ctrl+L")
+        
+        # Edit menu (for search)
+        edit_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="编辑", menu=edit_menu)
+        edit_menu.add_command(label="查找...", command=self.show_search, accelerator="Ctrl+F")
+        edit_menu.add_command(label="查找下一个", command=self.find_next, accelerator="F3")
+        edit_menu.add_command(label="查找上一个", command=self.find_previous, accelerator="Shift+F3")
         
         # Navigate menu
         nav_menu = tk.Menu(self.menubar, tearoff=0)
@@ -293,6 +401,8 @@ class TextReader:
         nav_menu.add_command(label="跳转到结尾", command=self.goto_end, accelerator="End")
         nav_menu.add_separator()
         nav_menu.add_command(label="跳转到位置...", command=self.goto_position, accelerator="Ctrl+G")
+        nav_menu.add_separator()
+        nav_menu.add_command(label="目录...", command=self.toggle_toc, accelerator="Ctrl+L")
         nav_menu.add_separator()
         nav_menu.add_command(label="添加书签", command=self.add_bookmark, accelerator="Ctrl+B")
         nav_menu.add_command(label="管理书签...", command=self.manage_bookmarks)
@@ -325,6 +435,12 @@ class TextReader:
         self.root.bind('<Control-minus>', lambda e: self.decrease_font_size())
         self.root.bind('<Control-equal>', lambda e: self.increase_font_size())
         
+        # Search
+        self.root.bind('<Control-f>', lambda e: self.show_search())
+        self.root.bind('<F3>', lambda e: self.find_next())
+        self.root.bind('<Shift-F3>', lambda e: self.find_previous())
+        self.root.bind('<Control-l>', lambda e: self.toggle_toc())
+        
         # Navigation
         self.root.bind('<Home>', lambda e: self.goto_start())
         self.root.bind('<End>', lambda e: self.goto_end())
@@ -333,7 +449,7 @@ class TextReader:
         
         # View
         self.root.bind('<F11>', lambda e: self.toggle_fullscreen())
-        self.root.bind('<Escape>', lambda e: self.exit_fullscreen())
+        self.root.bind('<Escape>', lambda e: self.on_escape())
         self.root.bind('<Control-t>', lambda e: self.toggle_toolbar())
         
         # Scrolling
@@ -436,8 +552,218 @@ class TextReader:
             # Update progress
             self.update_progress()
             
+            # Auto-generate table of contents
+            self.generate_toc()
+            
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
+    
+    # ==================== Search Functions ====================
+    
+    def show_search(self):
+        """Show the search bar."""
+        if not self.search_frame_visible:
+            self.search_frame.pack(fill=tk.X, padx=5, pady=2, after=self.toolbar)
+            self.search_frame_visible = True
+        self.search_entry.focus_set()
+        self.search_entry.select_range(0, tk.END)
+    
+    def hide_search(self):
+        """Hide the search bar."""
+        if self.search_frame_visible:
+            self.search_frame.pack_forget()
+            self.search_frame_visible = False
+            self.clear_search_highlights()
+            self.search_var.set('')
+            self.search_matches = []
+            self.current_match_index = -1
+    
+    def on_escape(self):
+        """Handle Escape key press."""
+        if self.search_frame_visible:
+            self.hide_search()
+        else:
+            self.exit_fullscreen()
+    
+    def on_search_change(self):
+        """Called when search text changes."""
+        self.perform_search()
+    
+    def perform_search(self):
+        """Perform the search and highlight all matches."""
+        self.clear_search_highlights()
+        self.search_matches = []
+        self.current_match_index = -1
+        
+        search_text = self.search_var.get()
+        if not search_text:
+            self.search_count_label.config(text="")
+            return
+        
+        # Get text content
+        content = self.text_widget.get("1.0", tk.END)
+        
+        # Search options
+        if self.case_sensitive_var.get():
+            flags = 0
+        else:
+            flags = re.IGNORECASE
+        
+        # Find all matches
+        try:
+            pattern = re.compile(re.escape(search_text), flags)
+            for match in pattern.finditer(content):
+                start_idx = f"1.0+{match.start()}c"
+                end_idx = f"1.0+{match.end()}c"
+                self.search_matches.append((start_idx, end_idx))
+                self.text_widget.tag_add('search_highlight', start_idx, end_idx)
+        except re.error:
+            pass
+        
+        # Update count label
+        count = len(self.search_matches)
+        if count == 0:
+            self.search_count_label.config(text="未找到")
+        else:
+            self.search_count_label.config(text=f"找到 {count} 个匹配")
+            # Auto-jump to first match
+            if count > 0:
+                self.current_match_index = 0
+                self.highlight_current_match()
+    
+    def clear_search_highlights(self):
+        """Clear all search highlights."""
+        self.text_widget.tag_remove('search_highlight', '1.0', tk.END)
+        self.text_widget.tag_remove('current_match', '1.0', tk.END)
+    
+    def highlight_current_match(self):
+        """Highlight the current match and scroll to it."""
+        if not self.search_matches or self.current_match_index < 0:
+            return
+        
+        # Remove previous current match highlight
+        self.text_widget.tag_remove('current_match', '1.0', tk.END)
+        
+        # Highlight current match
+        start_idx, end_idx = self.search_matches[self.current_match_index]
+        self.text_widget.tag_add('current_match', start_idx, end_idx)
+        
+        # Scroll to show the match
+        self.text_widget.see(start_idx)
+        
+        # Update count label
+        count = len(self.search_matches)
+        self.search_count_label.config(text=f"{self.current_match_index + 1} / {count}")
+    
+    def find_next(self):
+        """Find the next match."""
+        if not self.search_matches:
+            self.perform_search()
+            return
+        
+        if self.search_matches:
+            self.current_match_index = (self.current_match_index + 1) % len(self.search_matches)
+            self.highlight_current_match()
+    
+    def find_previous(self):
+        """Find the previous match."""
+        if not self.search_matches:
+            self.perform_search()
+            return
+        
+        if self.search_matches:
+            self.current_match_index = (self.current_match_index - 1) % len(self.search_matches)
+            self.highlight_current_match()
+    
+    # ==================== Table of Contents Functions ====================
+    
+    def toggle_toc(self):
+        """Toggle the Table of Contents sidebar."""
+        if self.toc_visible:
+            self.toc_frame.pack_forget()
+            self.toc_visible = False
+        else:
+            self.toc_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5), before=self.text_frame)
+            self.toc_visible = True
+            # Refresh TOC when showing
+            if not self.chapters:
+                self.generate_toc()
+    
+    def refresh_toc(self):
+        """Refresh the table of contents."""
+        self.generate_toc()
+    
+    def generate_toc(self):
+        """Auto-generate table of contents from the text."""
+        self.chapters = []
+        self.toc_listbox.delete(0, tk.END)
+        
+        if not self.current_content:
+            self.toc_listbox.insert(tk.END, "(无内容)")
+            return
+        
+        # Chapter patterns for Chinese novels
+        patterns = [
+            # 第X章, 第X节, 第X回, 第X卷
+            r'^[\s　]*(第[一二三四五六七八九十百千万零0-9]+[章节回卷部篇集].*?)$',
+            # Chapter X, CHAPTER X
+            r'^[\s　]*((?:Chapter|CHAPTER|chapter)\s*\d+.*?)$',
+            # 数字章节 如 "1. 标题", "1、标题", "1．标题"
+            r'^[\s　]*(\d+[\.、．]\s*.+?)$',
+            # 【章节标题】
+            r'^[\s　]*(【.+?】)$',
+            # 序章、序、前言、楔子、尾声、番外
+            r'^[\s　]*((?:序章|序|序言|前言|引子|楔子|尾声|番外|后记|附录).*)$',
+            # 卷X
+            r'^[\s　]*(卷[一二三四五六七八九十百千万零0-9]+.*)$',
+        ]
+        
+        lines = self.current_content.split('\n')
+        line_number = 1
+        
+        for line in lines:
+            line_stripped = line.strip()
+            if line_stripped:
+                # Check if line matches any chapter pattern
+                for pattern in patterns:
+                    match = re.match(pattern, line, re.MULTILINE)
+                    if match:
+                        chapter_title = match.group(1).strip()
+                        # Skip if title is too long (probably not a chapter)
+                        if len(chapter_title) <= self.MAX_CHAPTER_TITLE_LENGTH:
+                            self.chapters.append({
+                                'title': chapter_title,
+                                'line': line_number,
+                                'index': f"{line_number}.0"
+                            })
+                        break
+            line_number += 1
+        
+        # Populate listbox
+        if self.chapters:
+            for i, chapter in enumerate(self.chapters):
+                display_text = f"{chapter['title']}"
+                self.toc_listbox.insert(tk.END, display_text)
+        else:
+            self.toc_listbox.insert(tk.END, "(未检测到章节)")
+            self.toc_listbox.insert(tk.END, "")
+            self.toc_listbox.insert(tk.END, "支持的格式:")
+            self.toc_listbox.insert(tk.END, "・第X章/节/回/卷")
+            self.toc_listbox.insert(tk.END, "・Chapter X")
+            self.toc_listbox.insert(tk.END, "・1. 标题")
+            self.toc_listbox.insert(tk.END, "・【标题】")
+    
+    def on_toc_select(self, event=None):
+        """Handle TOC item selection."""
+        selection = self.toc_listbox.curselection()
+        if selection and self.chapters:
+            index = selection[0]
+            if index < len(self.chapters):
+                chapter = self.chapters[index]
+                # Jump to chapter
+                self.text_widget.see(chapter['index'])
+                self.text_widget.yview(chapter['index'])
+                self.update_progress()
     
     def add_to_recent(self, filepath):
         """Add file to recent files list."""
@@ -910,11 +1236,17 @@ class TextReader:
 文件操作:
   Ctrl+O          打开文件
 
+查找:
+  Ctrl+F          打开查找栏
+  F3              查找下一个
+  Shift+F3        查找上一个
+
 视图:
   Ctrl+ +         增大字号
   Ctrl+ -         减小字号
   F11             全屏模式
   Ctrl+T          隐藏/显示工具栏
+  Ctrl+L          显示/隐藏目录
 
 导航:
   Home            跳转到开头
@@ -927,7 +1259,7 @@ class TextReader:
   ↑↓              上下滚动
 
 其他:
-  Escape          退出全屏
+  Escape          关闭查找/退出全屏
         """
         messagebox.showinfo("快捷键列表", shortcuts)
     
@@ -936,7 +1268,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.1.0
+版本: 1.2.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -951,6 +1283,8 @@ TextReader 文本阅读器
 • 自动滚动
 • 全屏阅读模式
 • 4K/高DPI屏幕支持
+• 快速查找功能
+• 自动目录导航
 
 © 2024 TextReader
         """
