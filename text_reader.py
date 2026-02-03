@@ -634,10 +634,10 @@ class TextReader:
         
         # Schedule new search after 300ms delay (debounce)
         # This prevents freezing when typing Chinese with IME
-        self.search_job = self.root.after(300, self.perform_search)
+        self.search_job = self.root.after(300, self.start_progressive_search)
     
-    def perform_search(self):
-        """Perform the search and highlight all matches."""
+    def start_progressive_search(self):
+        """Start a progressive/incremental search."""
         self.search_job = None  # Clear the job reference
         self.clear_search_highlights()
         self.search_matches = []
@@ -651,8 +651,7 @@ class TextReader:
         # Get text content
         content = self.text_widget.get("1.0", tk.END)
         
-        # Use simple string find instead of regex for better performance
-        # This is faster especially for Chinese text
+        # Prepare search
         if self.case_sensitive_var.get():
             search_content = content
             search_pattern = search_text
@@ -660,14 +659,48 @@ class TextReader:
             search_content = content.lower()
             search_pattern = search_text.lower()
         
-        # Find all matches using string find (much faster than regex)
-        start = 0
-        pattern_len = len(search_text)
+        # Store search state for progressive processing
+        self.search_state = {
+            'content': search_content,
+            'pattern': search_pattern,
+            'pattern_len': len(search_text),
+            'start': 0,
+            'batch_size': 50,  # Process 50 matches per batch
+            'max_matches': 2000
+        }
         
-        while True:
-            pos = search_content.find(search_pattern, start)
+        self.search_count_label.config(text="搜索中... 已找到 0 个")
+        
+        # Start progressive search
+        self.continue_progressive_search()
+    
+    def jump_to_first_match_if_needed(self):
+        """Jump to first match if not already done."""
+        if len(self.search_matches) > 0 and self.current_match_index == -1:
+            self.current_match_index = 0
+            self.highlight_current_match()
+    
+    def continue_progressive_search(self):
+        """Continue progressive search in batches to avoid UI freeze."""
+        if not hasattr(self, 'search_state') or self.search_state is None:
+            return
+        
+        state = self.search_state
+        content = state['content']
+        pattern = state['pattern']
+        pattern_len = state['pattern_len']
+        start = state['start']
+        batch_size = state['batch_size']
+        max_matches = state['max_matches']
+        
+        # Process one batch
+        batch_count = 0
+        while batch_count < batch_size:
+            pos = content.find(pattern, start)
             if pos == -1:
-                break
+                # Search complete
+                self.finish_progressive_search()
+                return
             
             start_idx = f"1.0+{pos}c"
             end_idx = f"1.0+{pos + pattern_len}c"
@@ -675,24 +708,41 @@ class TextReader:
             self.text_widget.tag_add('search_highlight', start_idx, end_idx)
             
             start = pos + 1
+            batch_count += 1
             
-            # Limit matches to prevent UI freeze on very large files
-            if len(self.search_matches) >= 1000:
-                break
+            # Check max matches limit
+            if len(self.search_matches) >= max_matches:
+                self.finish_progressive_search(truncated=True)
+                return
         
-        # Update count label
+        # Update state for next batch
+        state['start'] = start
+        
+        # Update progress
+        count = len(self.search_matches)
+        self.search_count_label.config(text=f"搜索中... 已找到 {count} 个")
+        
+        # Jump to first match if this is the first batch with results
+        self.jump_to_first_match_if_needed()
+        
+        # Schedule next batch (yield to UI thread)
+        self.search_job = self.root.after(1, self.continue_progressive_search)
+    
+    def finish_progressive_search(self, truncated=False):
+        """Finish the progressive search."""
+        self.search_state = None
+        self.search_job = None
+        
         count = len(self.search_matches)
         if count == 0:
             self.search_count_label.config(text="未找到")
-        elif count >= 1000:
-            self.search_count_label.config(text=f"找到 1000+ 个匹配")
+        elif truncated:
+            self.search_count_label.config(text=f"找到 {count}+ 个匹配")
         else:
             self.search_count_label.config(text=f"找到 {count} 个匹配")
         
-        # Auto-jump to first match
-        if count > 0:
-            self.current_match_index = 0
-            self.highlight_current_match()
+        # Jump to first match if not already
+        self.jump_to_first_match_if_needed()
     
     def clear_search_highlights(self):
         """Clear all search highlights."""
@@ -1004,7 +1054,7 @@ class TextReader:
         """Open dialog to jump to a specific position."""
         dialog = tk.Toplevel(self.root)
         dialog.title("跳转到位置")
-        dialog.geometry("300x100")
+        dialog.geometry("350x150")
         dialog.transient(self.root)
         dialog.grab_set()
         
@@ -1053,7 +1103,7 @@ class TextReader:
         
         dialog = tk.Toplevel(self.root)
         dialog.title("书签管理")
-        dialog.geometry("400x300")
+        dialog.geometry("450x350")
         dialog.transient(self.root)
         
         # Listbox for bookmarks
@@ -1097,7 +1147,7 @@ class TextReader:
         """Open font settings dialog."""
         dialog = tk.Toplevel(self.root)
         dialog.title("字体设置")
-        dialog.geometry("350x250")
+        dialog.geometry("400x320")
         dialog.transient(self.root)
         dialog.grab_set()
         
@@ -1158,7 +1208,7 @@ class TextReader:
         """Open color settings dialog."""
         dialog = tk.Toplevel(self.root)
         dialog.title("颜色设置")
-        dialog.geometry("350x200")
+        dialog.geometry("420x280")
         dialog.transient(self.root)
         dialog.grab_set()
         
@@ -1220,11 +1270,11 @@ class TextReader:
         """Open line spacing settings dialog."""
         dialog = tk.Toplevel(self.root)
         dialog.title("行间距设置")
-        dialog.geometry("300x150")
+        dialog.geometry("380x200")
         dialog.transient(self.root)
         dialog.grab_set()
         
-        ttk.Label(dialog, text="行间距 (像素):").pack(pady=10)
+        ttk.Label(dialog, text="行间距 (像素):").pack(pady=15)
         
         spacing_var = tk.IntVar(value=self.settings['line_spacing'])
         scale = ttk.Scale(dialog, from_=0, to=30, orient=tk.HORIZONTAL, variable=spacing_var, length=200)
@@ -1252,11 +1302,11 @@ class TextReader:
         """Open auto-scroll speed settings dialog."""
         dialog = tk.Toplevel(self.root)
         dialog.title("自动滚动速度设置")
-        dialog.geometry("350x180")
+        dialog.geometry("420x240")
         dialog.transient(self.root)
         dialog.grab_set()
         
-        ttk.Label(dialog, text="滚动速度 (毫秒/行，越小越快):").pack(pady=10)
+        ttk.Label(dialog, text="滚动速度 (毫秒/行，越小越快):").pack(pady=15)
         
         speed_var = tk.IntVar(value=self.auto_scroll_speed)
         scale = ttk.Scale(dialog, from_=10, to=200, orient=tk.HORIZONTAL, variable=speed_var, length=250)
@@ -1288,11 +1338,11 @@ class TextReader:
         """Open UI scale settings dialog."""
         dialog = tk.Toplevel(self.root)
         dialog.title("界面缩放设置")
-        dialog.geometry("400x220")
+        dialog.geometry("480x300")
         dialog.transient(self.root)
         dialog.grab_set()
         
-        ttk.Label(dialog, text="界面缩放比例:").pack(pady=10)
+        ttk.Label(dialog, text="界面缩放比例:").pack(pady=15)
         
         # Use DoubleVar for float values
         scale_var = tk.DoubleVar(value=self.ui_scale)
@@ -1385,7 +1435,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.3.0
+版本: 1.3.1
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -1400,7 +1450,7 @@ TextReader 文本阅读器
 • 自动滚动
 • 全屏阅读模式
 • 4K/高DPI屏幕支持
-• 快速查找功能
+• 快速查找功能（渐进式搜索）
 • 自动目录导航
 • 界面缩放（80%-200%）
 
