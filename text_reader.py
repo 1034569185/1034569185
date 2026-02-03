@@ -191,7 +191,7 @@ class TextReader:
         self.scrollbar = ttk.Scrollbar(self.text_frame)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Text widget
+        # Text widget with optimized settings for smooth scrolling
         self.text_widget = tk.Text(
             self.text_frame,
             wrap=tk.WORD,
@@ -200,7 +200,13 @@ class TextReader:
             cursor="arrow",
             relief=tk.FLAT,
             padx=40,
-            pady=20
+            pady=20,
+            takefocus=0,  # Don't take keyboard focus
+            highlightthickness=0,  # Remove highlight border
+            borderwidth=0,  # Remove border
+            undo=False,  # Disable undo for better performance
+            autoseparators=False,  # Disable auto separators
+            maxundo=0  # No undo history
         )
         self.text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -493,19 +499,24 @@ class TextReader:
         self.root.bind('<Escape>', lambda e: self.on_escape())
         self.root.bind('<Control-t>', lambda e: self.toggle_toolbar())
         
-        # Scrolling
-        self.root.bind('<space>', lambda e: self.page_down())
-        self.root.bind('<Prior>', lambda e: self.page_up())
-        self.root.bind('<Next>', lambda e: self.page_down())
-        self.root.bind('<Up>', lambda e: self.scroll_up())
-        self.root.bind('<Down>', lambda e: self.scroll_down())
+        # Scrolling - return 'break' to prevent default behavior
+        self.root.bind('<space>', self.on_space_key)
+        self.root.bind('<Prior>', self.on_page_up)
+        self.root.bind('<Next>', self.on_page_down)
+        self.root.bind('<Up>', self.on_arrow_up)
+        self.root.bind('<Down>', self.on_arrow_down)
+        
+        # Bind mouse wheel for smooth scrolling
+        self.text_widget.bind('<MouseWheel>', self.on_mouse_wheel)
+        self.text_widget.bind('<Button-4>', self.on_mouse_wheel_linux)  # Linux scroll up
+        self.text_widget.bind('<Button-5>', self.on_mouse_wheel_linux)  # Linux scroll down
         
         # Window close
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
-        # Track scroll for progress
-        self.text_widget.bind('<MouseWheel>', lambda e: self.root.after(100, self.update_progress))
-        self.scrollbar.bind('<ButtonRelease-1>', lambda e: self.root.after(100, self.update_progress))
+        # Track scroll for progress when scrollbar is dragged
+        # 50ms delay allows scroll animation to complete before reading position
+        self.scrollbar.bind('<ButtonRelease-1>', lambda e: self.root.after(50, self.update_progress))
     
     def apply_settings(self):
         """Apply current settings to the UI."""
@@ -1020,24 +1031,97 @@ class TextReader:
             self.update_progress()
             self.root.after(self.auto_scroll_speed, self.do_auto_scroll)
     
+    # ==================== Keyboard Event Handlers ====================
+    
+    def _is_in_text_entry(self, event):
+        """Check if event occurred in a text entry widget."""
+        return event.widget == self.search_entry
+    
+    def on_space_key(self, event):
+        """Handle space key - page down."""
+        if self._is_in_text_entry(event):
+            return  # Let entry handle it
+        self.page_down()
+        return 'break'  # Prevent default
+    
+    def on_page_up(self, event):
+        """Handle Page Up key."""
+        self.page_up()
+        return 'break'  # Prevent default
+    
+    def on_page_down(self, event):
+        """Handle Page Down key."""
+        self.page_down()
+        return 'break'  # Prevent default
+    
+    def on_arrow_up(self, event):
+        """Handle Up arrow key."""
+        if self._is_in_text_entry(event):
+            return  # Let entry handle it
+        self.scroll_up()
+        return 'break'  # Prevent default
+    
+    def on_arrow_down(self, event):
+        """Handle Down arrow key."""
+        if self._is_in_text_entry(event):
+            return  # Let entry handle it
+        self.scroll_down()
+        return 'break'  # Prevent default
+    
+    def on_mouse_wheel(self, event):
+        """Handle mouse wheel scrolling with improved smoothness."""
+        # Windows/Mac: event.delta is typically ±120
+        # Scroll 3 lines per wheel tick for smooth but responsive scrolling
+        if event.delta > 0:
+            self.text_widget.yview_scroll(-3, 'units')
+        else:
+            self.text_widget.yview_scroll(3, 'units')
+        
+        self.update_progress()
+        return 'break'  # Prevent default
+    
+    def on_mouse_wheel_linux(self, event):
+        """Handle mouse wheel scrolling on Linux (Button-4/5)."""
+        # Scroll 3 lines per wheel tick for smooth but responsive scrolling
+        if event.num == 4:
+            self.text_widget.yview_scroll(-3, 'units')
+        elif event.num == 5:
+            self.text_widget.yview_scroll(3, 'units')
+        
+        self.update_progress()
+        return 'break'  # Prevent default
+    
+    # ==================== Scroll Functions ====================
+    
     def scroll_up(self):
-        """Scroll up by one line."""
-        self.text_widget.yview_scroll(-1, 'units')
+        """Scroll up by 2 lines for smoother experience."""
+        self.text_widget.yview_scroll(-2, 'units')
         self.update_progress()
     
     def scroll_down(self):
-        """Scroll down by one line."""
-        self.text_widget.yview_scroll(1, 'units')
+        """Scroll down by 2 lines for smoother experience."""
+        self.text_widget.yview_scroll(2, 'units')
         self.update_progress()
     
     def page_up(self):
-        """Scroll up by one page."""
-        self.text_widget.yview_scroll(-1, 'pages')
+        """Scroll up by approximately one page (80% of visible area for context)."""
+        visible_fraction = self.text_widget.yview()
+        page_size = visible_fraction[1] - visible_fraction[0]
+        
+        # Move by 80% of page to keep some context for reading continuity
+        new_pos = max(0, visible_fraction[0] - page_size * 0.8)
+        self.text_widget.yview_moveto(new_pos)
         self.update_progress()
     
     def page_down(self):
-        """Scroll down by one page."""
-        self.text_widget.yview_scroll(1, 'pages')
+        """Scroll down by approximately one page (80% of visible area for context)."""
+        visible_fraction = self.text_widget.yview()
+        page_size = visible_fraction[1] - visible_fraction[0]
+        
+        # Move by 80% of page to keep some context
+        # yview_moveto clamps to [0, 1], so we can simply calculate the new position
+        new_pos = min(1.0, visible_fraction[0] + page_size * 0.8)
+        self.text_widget.yview_moveto(new_pos)
         self.update_progress()
     
     def goto_start(self):
@@ -1435,7 +1519,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.3.1
+版本: 1.4.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -1453,6 +1537,7 @@ TextReader 文本阅读器
 • 快速查找功能（渐进式搜索）
 • 自动目录导航
 • 界面缩放（80%-200%）
+• 平滑翻页和滚动
 
 © 2024 TextReader
         """
