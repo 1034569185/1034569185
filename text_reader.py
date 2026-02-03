@@ -36,6 +36,7 @@ class TextReader:
         'window_height': 700,
         'last_file': '',
         'last_position': 0,
+        'auto_scroll_speed': 50,
         'bookmarks': {},
         'recent_files': []
     }
@@ -69,7 +70,7 @@ class TextReader:
         
         # Auto-scroll state
         self.auto_scroll_active = False
-        self.auto_scroll_speed = 50  # milliseconds between scroll
+        self.auto_scroll_speed = self.settings.get('auto_scroll_speed', 50)  # milliseconds between scroll
         
         # Setup UI
         self.setup_ui()
@@ -82,6 +83,9 @@ class TextReader:
         # Load last file if exists
         if self.settings.get('last_file') and os.path.exists(self.settings['last_file']):
             self.load_file(self.settings['last_file'])
+            # Restore last reading position
+            if self.settings.get('last_position', 0) > 0:
+                self.root.after(100, lambda: self.text_widget.yview_moveto(self.settings['last_position']))
     
     def load_settings(self):
         """Load settings from file or use defaults."""
@@ -276,6 +280,7 @@ class TextReader:
         settings_menu.add_command(label="颜色设置...", command=self.open_color_settings)
         settings_menu.add_separator()
         settings_menu.add_command(label="行间距设置...", command=self.open_line_spacing_settings)
+        settings_menu.add_command(label="自动滚动速度...", command=self.open_scroll_speed_settings)
         settings_menu.add_separator()
         settings_menu.add_command(label="恢复默认设置", command=self.reset_settings)
         
@@ -823,6 +828,42 @@ class TextReader:
         def apply_changes():
             self.settings['line_spacing'] = spacing_var.get()
             self.apply_settings()
+            dialog.destroy()
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def open_scroll_speed_settings(self):
+        """Open auto-scroll speed settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("自动滚动速度设置")
+        dialog.geometry("350x180")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="滚动速度 (毫秒/行，越小越快):").pack(pady=10)
+        
+        speed_var = tk.IntVar(value=self.auto_scroll_speed)
+        scale = ttk.Scale(dialog, from_=10, to=200, orient=tk.HORIZONTAL, variable=speed_var, length=250)
+        scale.pack(pady=5)
+        
+        value_label = ttk.Label(dialog, text=f"{self.auto_scroll_speed} ms")
+        value_label.pack(pady=5)
+        
+        # Speed description
+        desc_label = ttk.Label(dialog, text="提示：10ms=极快，50ms=正常，200ms=慢速")
+        desc_label.pack(pady=5)
+        
+        def update_label(*args):
+            value_label.config(text=f"{speed_var.get()} ms")
+        
+        speed_var.trace('w', update_label)
+        
+        def apply_changes():
+            self.auto_scroll_speed = speed_var.get()
+            self.settings['auto_scroll_speed'] = self.auto_scroll_speed
             dialog.destroy()
         
         btn_frame = ttk.Frame(dialog)
