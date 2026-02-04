@@ -189,14 +189,14 @@ class TextReader:
         # Toolbar
         self.setup_toolbar()
         
-        # Search bar (hidden by default)
-        self.setup_search_bar()
-        
-        # Content area with TOC and text
+        # Content area with TOC and text (must be created BEFORE search bar and TOC panel)
         self.content_frame = ttk.Frame(self.main_frame)
         self.content_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # Table of Contents sidebar (hidden by default)
+        # Search bar (hidden by default) - needs content_frame for results panel
+        self.setup_search_bar()
+        
+        # Table of Contents sidebar (hidden by default) - needs content_frame
         self.setup_toc_panel()
         
         # Text area with scrollbar
