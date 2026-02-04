@@ -89,6 +89,9 @@ class TextReader:
     # Maximum length for chapter title (to filter out false positives)
     MAX_CHAPTER_TITLE_LENGTH = 50
     
+    # Maximum display length for chapter title in TOC (with ellipsis)
+    MAX_TOC_TITLE_DISPLAY_LENGTH = 35
+    
     def __init__(self, root):
         """Initialize the TextReader application."""
         self.root = root
@@ -265,7 +268,8 @@ class TextReader:
         self.menu_font = ('Microsoft YaHei UI', base_font_size)
     
     def setup_search_bar(self):
-        """Setup the search bar UI."""
+        """Setup the search bar UI with results panel."""
+        # Search bar (top)
         self.search_frame = ttk.Frame(self.main_frame)
         # Not packed initially - shown when user presses Ctrl+F
         
@@ -289,7 +293,87 @@ class TextReader:
         ttk.Checkbutton(self.search_frame, text="区分大小写", variable=self.case_sensitive_var, 
                        command=self.on_search_change).pack(side=tk.LEFT, padx=5)
         
+        # Toggle results panel button
+        ttk.Button(self.search_frame, text="📋 结果", command=self.toggle_search_results).pack(side=tk.LEFT, padx=5)
+        
         ttk.Button(self.search_frame, text="✕", width=3, command=self.hide_search).pack(side=tk.RIGHT, padx=5)
+        
+        # Search results panel (side panel like Koodo Reader)
+        self.setup_search_results_panel()
+    
+    def setup_search_results_panel(self):
+        """Setup the search results panel with excerpts (like Koodo Reader)."""
+        panel_width = int(350 * self.ui_scale)
+        self.search_results_frame = ttk.Frame(self.content_frame, width=panel_width)
+        self.search_results_visible = False
+        # Not packed initially
+        
+        # Header
+        header = ttk.Frame(self.search_results_frame)
+        header.pack(fill=tk.X, pady=5)
+        
+        title_font_size = int(12 * self.ui_scale)
+        ttk.Label(header, text="🔍 搜索结果", font=('Microsoft YaHei UI', title_font_size, 'bold')).pack(side=tk.LEFT, padx=10)
+        ttk.Button(header, text="✕", width=3, command=self.toggle_search_results).pack(side=tk.RIGHT, padx=5)
+        
+        ttk.Separator(self.search_results_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
+        
+        # Results info and pagination
+        self.search_results_info_frame = ttk.Frame(self.search_results_frame)
+        self.search_results_info_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        self.search_results_info_label = ttk.Label(self.search_results_info_frame, text="")
+        self.search_results_info_label.pack(side=tk.LEFT)
+        
+        # Pagination controls
+        self.search_page_frame = ttk.Frame(self.search_results_info_frame)
+        self.search_page_frame.pack(side=tk.RIGHT)
+        
+        ttk.Button(self.search_page_frame, text="◀", width=3, command=self.prev_search_page).pack(side=tk.LEFT, padx=2)
+        self.search_page_label = ttk.Label(self.search_page_frame, text="1/1")
+        self.search_page_label.pack(side=tk.LEFT, padx=5)
+        ttk.Button(self.search_page_frame, text="▶", width=3, command=self.next_search_page).pack(side=tk.LEFT, padx=2)
+        
+        ttk.Separator(self.search_results_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
+        
+        # Results list with scrollbar
+        results_list_frame = ttk.Frame(self.search_results_frame)
+        results_list_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        results_scrollbar = ttk.Scrollbar(results_list_frame)
+        results_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Use Text widget for rich display of excerpts
+        result_font_size = int(10 * self.ui_scale)
+        self.search_results_text = tk.Text(
+            results_list_frame,
+            wrap=tk.WORD,
+            yscrollcommand=results_scrollbar.set,
+            font=('Microsoft YaHei UI', result_font_size),
+            cursor='arrow',
+            state=tk.DISABLED,
+            padx=10,
+            pady=5
+        )
+        self.search_results_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        results_scrollbar.config(command=self.search_results_text.yview)
+        
+        # Configure tags for search results
+        self.search_results_text.tag_configure('excerpt', foreground='#666666')
+        self.search_results_text.tag_configure('keyword', foreground='#E53935', font=('Microsoft YaHei UI', result_font_size, 'bold'))
+        self.search_results_text.tag_configure('location', foreground='#1976D2', font=('Microsoft YaHei UI', result_font_size - 1))
+        self.search_results_text.tag_configure('separator', foreground='#CCCCCC')
+        self.search_results_text.tag_configure('clickable', foreground='#333333')
+        
+        # Bind click events for result items
+        self.search_results_text.bind('<Button-1>', self.on_search_result_click)
+        self.search_results_text.bind('<Enter>', lambda e: self.search_results_text.config(cursor='hand2'))
+        self.search_results_text.bind('<Leave>', lambda e: self.search_results_text.config(cursor='arrow'))
+        
+        # Pagination state
+        self.search_results_page = 0
+        self.search_results_per_page = 20
+        self.search_results_data = []  # List of {start_idx, end_idx, excerpt, line}
     
     def setup_toc_panel(self):
         """Setup the Table of Contents sidebar."""
@@ -308,9 +392,27 @@ class TextReader:
         # Refresh button
         ttk.Button(toc_header, text="🔄", width=3, command=self.refresh_toc).pack(side=tk.RIGHT, padx=2)
         
+        # Chapter count info
+        self.toc_count_label = ttk.Label(self.toc_frame, text="", font=('Microsoft YaHei UI', int(9 * self.ui_scale)))
+        self.toc_count_label.pack(fill=tk.X, padx=10)
+        
         ttk.Separator(self.toc_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
         
-        # TOC listbox with scrollbar
+        # TOC search box
+        toc_search_frame = ttk.Frame(self.toc_frame)
+        toc_search_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        self.toc_search_var = tk.StringVar()
+        toc_search_entry = ttk.Entry(toc_search_frame, textvariable=self.toc_search_var, width=20)
+        toc_search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        toc_search_entry.insert(0, "")
+        self.toc_search_var.trace('w', lambda *args: self.filter_toc())
+        
+        ttk.Label(toc_search_frame, text="🔍").pack(side=tk.LEFT)
+        
+        ttk.Separator(self.toc_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
+        
+        # TOC listbox with scrollbar - use Text widget for better styling
         toc_list_frame = ttk.Frame(self.toc_frame)
         toc_list_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
@@ -318,18 +420,27 @@ class TextReader:
         toc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         toc_font_size = int(11 * self.ui_scale)
-        self.toc_listbox = tk.Listbox(
+        self.toc_text = tk.Text(
             toc_list_frame,
+            wrap=tk.WORD,
             yscrollcommand=toc_scrollbar.set,
             font=('Microsoft YaHei UI', toc_font_size),
-            selectmode=tk.SINGLE,
-            activestyle='none'
+            cursor='arrow',
+            state=tk.DISABLED,
+            padx=5,
+            pady=5
         )
-        self.toc_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.toc_listbox.bind('<Double-1>', self.on_toc_select)
-        self.toc_listbox.bind('<Return>', self.on_toc_select)
+        self.toc_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        toc_scrollbar.config(command=self.toc_text.yview)
         
-        toc_scrollbar.config(command=self.toc_listbox.yview)
+        # Configure TOC text tags
+        self.toc_text.tag_configure('chapter', foreground='#333333')
+        self.toc_text.tag_configure('chapter_hover', foreground='#1976D2', underline=True)
+        self.toc_text.tag_configure('chapter_num', foreground='#888888', font=('Microsoft YaHei UI', toc_font_size - 1))
+        self.toc_text.tag_configure('separator', foreground='#CCCCCC')
+        
+        # Store filtered chapters for display
+        self.filtered_chapters = []
     
     def setup_toolbar(self):
         """Setup the toolbar with quick actions."""
@@ -659,7 +770,7 @@ class TextReader:
         self.search_entry.select_range(0, tk.END)
     
     def hide_search(self):
-        """Hide the search bar."""
+        """Hide the search bar and results panel."""
         if self.search_frame_visible:
             self.search_frame.pack_forget()
             self.search_frame_visible = False
@@ -667,6 +778,22 @@ class TextReader:
             self.search_var.set('')
             self.search_matches = []
             self.current_match_index = -1
+        
+        # Also hide results panel
+        if self.search_results_visible:
+            self.search_results_frame.pack_forget()
+            self.search_results_visible = False
+    
+    def toggle_search_results(self):
+        """Toggle the search results panel."""
+        if self.search_results_visible:
+            self.search_results_frame.pack_forget()
+            self.search_results_visible = False
+        else:
+            self.search_results_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(5, 0), before=self.text_frame)
+            self.search_results_visible = True
+            # Refresh results display
+            self.display_search_results_page()
     
     def on_escape(self):
         """Handle Escape key press."""
@@ -690,11 +817,14 @@ class TextReader:
         self.search_job = None  # Clear the job reference
         self.clear_search_highlights()
         self.search_matches = []
+        self.search_results_data = []  # Clear excerpt data
+        self.search_results_page = 0
         self.current_match_index = -1
         
         search_text = self.search_var.get()
         if not search_text:
             self.search_count_label.config(text="")
+            self.update_search_results_panel()
             return
         
         # Get text content
@@ -711,11 +841,14 @@ class TextReader:
         # Store search state for progressive processing
         self.search_state = {
             'content': search_content,
+            'original_content': self.current_content,  # For excerpts
             'pattern': search_pattern,
+            'original_pattern': search_text,  # Original search text
             'pattern_len': len(search_text),
             'start': 0,
             'batch_size': 50,  # Process 50 matches per batch
-            'max_matches': 2000
+            'max_matches': 2000,
+            'excerpt_context': 30  # Characters before/after match for excerpt
         }
         
         self.search_count_label.config(text="搜索中... 已找到 0 个")
@@ -736,11 +869,14 @@ class TextReader:
         
         state = self.search_state
         content = state['content']
+        original_content = state['original_content']
         pattern = state['pattern']
+        original_pattern = state['original_pattern']
         pattern_len = state['pattern_len']
         start = state['start']
         batch_size = state['batch_size']
         max_matches = state['max_matches']
+        excerpt_context = state['excerpt_context']
         
         # Process one batch
         batch_count = 0
@@ -755,6 +891,29 @@ class TextReader:
             end_idx = f"1.0+{pos + pattern_len}c"
             self.search_matches.append((start_idx, end_idx))
             self.text_widget.tag_add('search_highlight', start_idx, end_idx)
+            
+            # Generate excerpt for this match
+            excerpt_start = max(0, pos - excerpt_context)
+            excerpt_end = min(len(original_content), pos + pattern_len + excerpt_context)
+            
+            # Get excerpt text and find actual keyword position in it
+            excerpt = original_content[excerpt_start:excerpt_end]
+            keyword_start_in_excerpt = pos - excerpt_start
+            keyword_end_in_excerpt = keyword_start_in_excerpt + pattern_len
+            
+            # Get line number
+            line_num = original_content[:pos].count('\n') + 1
+            
+            # Store result data
+            self.search_results_data.append({
+                'start_idx': start_idx,
+                'end_idx': end_idx,
+                'excerpt': excerpt,
+                'keyword_start': keyword_start_in_excerpt,
+                'keyword_end': keyword_end_in_excerpt,
+                'line': line_num,
+                'pos': pos
+            })
             
             start = pos + 1
             batch_count += 1
@@ -792,6 +951,132 @@ class TextReader:
         
         # Jump to first match if not already
         self.jump_to_first_match_if_needed()
+        
+        # Update search results panel
+        self.update_search_results_panel()
+    
+    def update_search_results_panel(self):
+        """Update the search results panel with current results."""
+        if not hasattr(self, 'search_results_text'):
+            return
+        
+        self.display_search_results_page()
+    
+    def display_search_results_page(self):
+        """Display the current page of search results with excerpts."""
+        if not hasattr(self, 'search_results_text'):
+            return
+        
+        self.search_results_text.config(state=tk.NORMAL)
+        self.search_results_text.delete('1.0', tk.END)
+        
+        total = len(self.search_results_data)
+        if total == 0:
+            self.search_results_text.insert(tk.END, "\n  无搜索结果\n\n  请在搜索框输入关键词")
+            self.search_results_info_label.config(text="")
+            self.search_page_label.config(text="0/0")
+            self.search_results_text.config(state=tk.DISABLED)
+            return
+        
+        # Calculate pagination
+        per_page = self.search_results_per_page
+        total_pages = (total + per_page - 1) // per_page
+        current_page = self.search_results_page
+        
+        # Ensure current page is valid
+        if current_page >= total_pages:
+            current_page = total_pages - 1
+            self.search_results_page = current_page
+        if current_page < 0:
+            current_page = 0
+            self.search_results_page = 0
+        
+        start_idx = current_page * per_page
+        end_idx = min(start_idx + per_page, total)
+        
+        # Update info labels
+        self.search_results_info_label.config(text=f"共 {total} 个结果")
+        self.search_page_label.config(text=f"{current_page + 1}/{total_pages}")
+        
+        # Display results for current page
+        for i, result in enumerate(self.search_results_data[start_idx:end_idx]):
+            result_num = start_idx + i + 1
+            line = result['line']
+            excerpt = result['excerpt']
+            keyword_start = result['keyword_start']
+            keyword_end = result['keyword_end']
+            
+            # Clean up excerpt (replace newlines with spaces)
+            excerpt = excerpt.replace('\n', ' ').replace('\r', '')
+            
+            # Add prefix/suffix ellipsis if truncated
+            # Prefix: if match position is beyond context window from start
+            prefix = "..." if result['pos'] > 30 else ""
+            # Suffix: if there's more content after the excerpt
+            excerpt_end_pos = result['pos'] + result['keyword_end'] - result['keyword_start'] + 30
+            suffix = "..." if excerpt_end_pos < len(self.current_content) else ""
+            
+            # Insert result number and location
+            self.search_results_text.insert(tk.END, f"\n #{result_num}  ", 'clickable')
+            self.search_results_text.insert(tk.END, f"第 {line} 行\n", 'location')
+            
+            # Insert excerpt with highlighted keyword
+            # Add tag for making it clickable
+            tag_name = f"result_{start_idx + i}"
+            self.search_results_text.tag_configure(tag_name, foreground='#333333')
+            self.search_results_text.tag_bind(tag_name, '<Button-1>', 
+                lambda e, idx=start_idx + i: self.jump_to_search_result(idx))
+            self.search_results_text.tag_bind(tag_name, '<Enter>', 
+                lambda e: self.search_results_text.config(cursor='hand2'))
+            self.search_results_text.tag_bind(tag_name, '<Leave>', 
+                lambda e: self.search_results_text.config(cursor='arrow'))
+            
+            # Insert excerpt text with keyword highlighted
+            self.search_results_text.insert(tk.END, f"  {prefix}", tag_name)
+            
+            # Text before keyword
+            if keyword_start > 0:
+                self.search_results_text.insert(tk.END, excerpt[:keyword_start], ('excerpt', tag_name))
+            
+            # Keyword (highlighted)
+            self.search_results_text.insert(tk.END, excerpt[keyword_start:keyword_end], ('keyword', tag_name))
+            
+            # Text after keyword
+            if keyword_end < len(excerpt):
+                self.search_results_text.insert(tk.END, excerpt[keyword_end:], ('excerpt', tag_name))
+            
+            self.search_results_text.insert(tk.END, f"{suffix}\n", tag_name)
+            
+            # Separator
+            if i < end_idx - start_idx - 1:
+                self.search_results_text.insert(tk.END, "  ─────────────────────────\n", 'separator')
+        
+        self.search_results_text.config(state=tk.DISABLED)
+    
+    def prev_search_page(self):
+        """Go to previous page of search results."""
+        if self.search_results_page > 0:
+            self.search_results_page -= 1
+            self.display_search_results_page()
+    
+    def next_search_page(self):
+        """Go to next page of search results."""
+        total = len(self.search_results_data)
+        total_pages = (total + self.search_results_per_page - 1) // self.search_results_per_page
+        if self.search_results_page < total_pages - 1:
+            self.search_results_page += 1
+            self.display_search_results_page()
+    
+    def on_search_result_click(self, event):
+        """Handle click on search result (fallback)."""
+        # This is a fallback - individual results have their own click handlers
+        pass
+    
+    def jump_to_search_result(self, index):
+        """Jump to a specific search result."""
+        if 0 <= index < len(self.search_results_data):
+            self.current_match_index = index
+            self.highlight_current_match()
     
     def clear_search_highlights(self):
         """Clear all search highlights."""
@@ -858,10 +1143,9 @@ class TextReader:
     def generate_toc(self):
         """Auto-generate table of contents from the text."""
         self.chapters = []
-        self.toc_listbox.delete(0, tk.END)
         
         if not self.current_content:
-            self.toc_listbox.insert(tk.END, "(无内容)")
+            self.display_toc()
             return
         
         # Chapter patterns for Chinese novels
@@ -901,31 +1185,102 @@ class TextReader:
                         break
             line_number += 1
         
-        # Populate listbox
-        if self.chapters:
-            for i, chapter in enumerate(self.chapters):
-                display_text = f"{chapter['title']}"
-                self.toc_listbox.insert(tk.END, display_text)
+        # Display TOC
+        self.display_toc()
+    
+    def filter_toc(self):
+        """Filter TOC based on search text."""
+        self.display_toc()
+    
+    def display_toc(self):
+        """Display the table of contents in the Text widget."""
+        if not hasattr(self, 'toc_text'):
+            return
+        
+        self.toc_text.config(state=tk.NORMAL)
+        self.toc_text.delete('1.0', tk.END)
+        
+        if not self.current_content:
+            self.toc_text.insert(tk.END, "\n  (无内容)")
+            self.toc_count_label.config(text="")
+            self.toc_text.config(state=tk.DISABLED)
+            return
+        
+        # Get filter text
+        filter_text = self.toc_search_var.get().lower() if hasattr(self, 'toc_search_var') else ""
+        
+        # Filter chapters
+        if filter_text:
+            self.filtered_chapters = [c for c in self.chapters if filter_text in c['title'].lower()]
         else:
-            self.toc_listbox.insert(tk.END, "(未检测到章节)")
-            self.toc_listbox.insert(tk.END, "")
-            self.toc_listbox.insert(tk.END, "支持的格式:")
-            self.toc_listbox.insert(tk.END, "・第X章/节/回/卷")
-            self.toc_listbox.insert(tk.END, "・Chapter X")
-            self.toc_listbox.insert(tk.END, "・1. 标题")
-            self.toc_listbox.insert(tk.END, "・【标题】")
+            self.filtered_chapters = self.chapters.copy()
+        
+        # Update count label
+        total = len(self.chapters)
+        filtered = len(self.filtered_chapters)
+        if filter_text:
+            self.toc_count_label.config(text=f"显示 {filtered}/{total} 章节")
+        else:
+            self.toc_count_label.config(text=f"共 {total} 章节")
+        
+        if not self.filtered_chapters:
+            if self.chapters:
+                self.toc_text.insert(tk.END, "\n  无匹配章节")
+            else:
+                self.toc_text.insert(tk.END, "\n  (未检测到章节)\n\n")
+                self.toc_text.insert(tk.END, "  支持的格式:\n")
+                self.toc_text.insert(tk.END, "  ・第X章/节/回/卷\n")
+                self.toc_text.insert(tk.END, "  ・Chapter X\n")
+                self.toc_text.insert(tk.END, "  ・1. 标题\n")
+                self.toc_text.insert(tk.END, "  ・【标题】\n")
+            self.toc_text.config(state=tk.DISABLED)
+            return
+        
+        # Display chapters with clickable tags
+        for i, chapter in enumerate(self.filtered_chapters):
+            # Create unique tag for this chapter
+            tag_name = f"chapter_{i}"
+            self.toc_text.tag_configure(tag_name, foreground='#333333')
+            
+            # Find original index in chapters list
+            original_idx = self.chapters.index(chapter)
+            
+            # Bind click event
+            self.toc_text.tag_bind(tag_name, '<Button-1>', 
+                lambda e, idx=original_idx: self.jump_to_chapter(idx))
+            self.toc_text.tag_bind(tag_name, '<Enter>', 
+                lambda e, t=tag_name: self.toc_text.tag_configure(t, foreground='#1976D2', underline=True))
+            self.toc_text.tag_bind(tag_name, '<Leave>', 
+                lambda e, t=tag_name: self.toc_text.tag_configure(t, foreground='#333333', underline=False))
+            
+            # Insert chapter number
+            chapter_num = i + 1
+            self.toc_text.insert(tk.END, f"\n {chapter_num:3d}. ", 'chapter_num')
+            
+            # Insert chapter title (clickable), truncate if too long
+            title = chapter['title']
+            max_len = self.MAX_TOC_TITLE_DISPLAY_LENGTH
+            if len(title) > max_len:
+                title = title[:max_len - 3] + "..."
+            self.toc_text.insert(tk.END, f"{title}", tag_name)
+            
+            # Insert line number
+            self.toc_text.insert(tk.END, f"  (行 {chapter['line']})", 'chapter_num')
+        
+        self.toc_text.insert(tk.END, "\n")
+        self.toc_text.config(state=tk.DISABLED)
+    
+    def jump_to_chapter(self, index):
+        """Jump to a specific chapter."""
+        if 0 <= index < len(self.chapters):
+            chapter = self.chapters[index]
+            self.text_widget.see(chapter['index'])
+            self.text_widget.yview(chapter['index'])
+            self.update_progress()
     
     def on_toc_select(self, event=None):
-        """Handle TOC item selection."""
-        selection = self.toc_listbox.curselection()
-        if selection and self.chapters:
-            index = selection[0]
-            if index < len(self.chapters):
-                chapter = self.chapters[index]
-                # Jump to chapter
-                self.text_widget.see(chapter['index'])
-                self.text_widget.yview(chapter['index'])
-                self.update_progress()
+        """Handle TOC item selection (legacy - for listbox compatibility)."""
+        pass
     
     def add_to_recent(self, filepath):
         """Add file to recent files list."""
@@ -1647,7 +2002,7 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.5.0
+版本: 1.6.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
@@ -1663,8 +2018,9 @@ TextReader 文本阅读器
 • 自动滚动
 • 全屏阅读模式
 • 4K/高DPI屏幕支持
-• 渐进式搜索
-• 自动目录导航
+• 搜索结果带片段预览
+• 搜索结果分页显示
+• 目录搜索过滤
 • 界面缩放（80%-200%）
 • 平滑翻页和滚动
 
