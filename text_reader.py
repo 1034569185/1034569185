@@ -2067,9 +2067,24 @@ def main():
     except Exception:
         pass
     
-    app = TextReader(root)
-    root.mainloop()
+    try:
+        app = TextReader(root)
+        root.mainloop()
+    except Exception as e:
+        import traceback
+        error_msg = f"程序启动时发生错误:\n\n{str(e)}\n\n{traceback.format_exc()}"
+        try:
+            messagebox.showerror("错误", error_msg)
+        except:
+            print(error_msg)
+        raise
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print(f"Error: {e}")
+        print(traceback.format_exc())
+        input("按 Enter 键退出...")
