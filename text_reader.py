@@ -22,6 +22,7 @@ import os
 import sys
 import ctypes
 import re
+import time
 from pathlib import Path
 
 
@@ -57,26 +58,32 @@ class TextReader:
         'text_color': '#333333',
         'bg_color': '#F5F5DC',
         'line_spacing': 10,
+        'paragraph_spacing': 10,
         'window_width': 900,
         'window_height': 700,
         'last_file': '',
         'last_position': 0,
         'auto_scroll_speed': 50,
         'ui_scale': 1.0,
+        'reading_stats': {},
         'bookmarks': {},
         'recent_files': []
     }
     
-    # Predefined color themes
+    # Predefined color themes (inspired by koodo-reader)
     THEMES = {
-        '护眼绿': {'bg': '#CCE8CF', 'text': '#333333'},
-        '羊皮纸': {'bg': '#F5F5DC', 'text': '#333333'},
-        '夜间模式': {'bg': '#1E1E1E', 'text': '#E0E0E0'},
-        '暖白色': {'bg': '#FFF8E7', 'text': '#333333'},
-        '淡蓝色': {'bg': '#E6F3FF', 'text': '#333333'},
-        '纯白色': {'bg': '#FFFFFF', 'text': '#000000'},
-        '深棕色': {'bg': '#3E2723', 'text': '#D7CCC8'},
-        '海洋蓝': {'bg': '#0D47A1', 'text': '#E3F2FD'},
+        '羊皮纸': {'bg': '#E9D8BC', 'text': '#594429'},  # Classic sepia
+        '护眼绿': {'bg': '#C5E7CF', 'text': '#36503E'},  # Eye-care green
+        '纯白色': {'bg': '#FFFFFF', 'text': '#000000'},  # Pure white
+        '深夜模式': {'bg': '#2C2F31', 'text': '#FFFFFF'},  # Dark mode
+        '暖白色': {'bg': '#FFF8E7', 'text': '#333333'},  # Warm white
+        '淡蓝色': {'bg': '#E6F3FF', 'text': '#333333'},  # Light blue
+        '薄荷绿': {'bg': '#E8F5E9', 'text': '#1B5E20'},  # Mint green
+        '薰衣草': {'bg': '#F3E5F5', 'text': '#4A148C'},  # Lavender
+        '桃粉色': {'bg': '#FCE4EC', 'text': '#880E4F'},  # Peach pink
+        '深棕色': {'bg': '#3E2723', 'text': '#D7CCC8'},  # Deep brown
+        '海洋蓝': {'bg': '#0D47A1', 'text': '#E3F2FD'},  # Ocean blue
+        '墨绿色': {'bg': '#1B5E20', 'text': '#C8E6C9'},  # Dark green
     }
     
     # Maximum length for chapter title (to filter out false positives)
@@ -96,6 +103,12 @@ class TextReader:
         # Current file info
         self.current_file = None
         self.current_content = ""
+        self.word_count = 0
+        self.char_count = 0
+        
+        # Reading time tracking
+        self.reading_start_time = None
+        self.total_reading_time = 0  # in seconds
         
         # Auto-scroll state
         self.auto_scroll_active = False
@@ -460,8 +473,12 @@ class TextReader:
         settings_menu.add_command(label="颜色设置...", command=self.open_color_settings)
         settings_menu.add_separator()
         settings_menu.add_command(label="行间距设置...", command=self.open_line_spacing_settings)
+        settings_menu.add_command(label="段落间距设置...", command=self.open_para_spacing_settings)
+        settings_menu.add_separator()
         settings_menu.add_command(label="自动滚动速度...", command=self.open_scroll_speed_settings)
         settings_menu.add_command(label="界面缩放...", command=self.open_ui_scale_settings)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="阅读统计", command=self.show_reading_stats)
         settings_menu.add_separator()
         settings_menu.add_command(label="恢复默认设置", command=self.reset_settings)
         
@@ -531,7 +548,8 @@ class TextReader:
             font=font_config,
             bg=self.settings['bg_color'],
             fg=self.settings['text_color'],
-            spacing3=self.settings['line_spacing'],
+            spacing1=self.settings.get('paragraph_spacing', 10),  # paragraph spacing (before)
+            spacing3=self.settings.get('line_spacing', 10),  # line spacing (after)
             insertbackground=self.settings['text_color']
         )
         
@@ -578,6 +596,17 @@ class TextReader:
             self.current_file = filepath
             self.current_content = content
             
+            # Calculate statistics
+            self.char_count = len(content)
+            # Count Chinese characters
+            chinese_chars = len([c for c in content if '\u4e00' <= c <= '\u9fff'])
+            # Count English words using regex
+            english_words = len(re.findall(r'\b[a-zA-Z]+\b', content))
+            self.word_count = chinese_chars + english_words
+            
+            # Estimate reading time (average 300 Chinese chars/min or 200 English words/min)
+            reading_time_min = max(1, self.word_count / 300)  # Minimum 1 minute
+            
             # Update text widget
             self.text_widget.configure(state=tk.NORMAL)
             self.text_widget.delete(1.0, tk.END)
@@ -588,10 +617,19 @@ class TextReader:
             filename = os.path.basename(filepath)
             self.root.title(f"TextReader - {filename}")
             
-            # Update status
+            # Update status with reading time estimate
             line_count = content.count('\n') + 1
-            char_count = len(content)
-            self.status_label.config(text=f"已打开: {filename} | {line_count} 行 | {char_count} 字符")
+            if reading_time_min < 60:
+                time_str = f"约 {int(reading_time_min)} 分钟"
+            else:
+                hours = int(reading_time_min // 60)
+                mins = int(reading_time_min % 60)
+                time_str = f"约 {hours} 小时 {mins} 分钟"
+            
+            self.status_label.config(text=f"已打开: {filename} | {line_count:,} 行 | {self.char_count:,} 字 | 阅读时间: {time_str}")
+            
+            # Start reading time tracking
+            self.reading_start_time = time.time()
             
             # Restore position if available
             if filepath in self.settings.get('bookmarks', {}):
@@ -1382,6 +1420,96 @@ class TextReader:
         ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
         ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
     
+    def open_para_spacing_settings(self):
+        """Open paragraph spacing settings dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("段落间距设置")
+        dialog.geometry("380x200")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="段落间距 (像素):").pack(pady=15)
+        
+        spacing_var = tk.IntVar(value=self.settings.get('paragraph_spacing', 10))
+        scale = ttk.Scale(dialog, from_=0, to=50, orient=tk.HORIZONTAL, variable=spacing_var, length=200)
+        scale.pack(pady=5)
+        
+        value_label = ttk.Label(dialog, text=f"{self.settings.get('paragraph_spacing', 10)} px")
+        value_label.pack(pady=5)
+        
+        def update_label(*args):
+            value_label.config(text=f"{spacing_var.get()} px")
+        
+        spacing_var.trace('w', update_label)
+        
+        def apply_changes():
+            self.settings['paragraph_spacing'] = spacing_var.get()
+            self.apply_settings()
+            dialog.destroy()
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        ttk.Button(btn_frame, text="确定", command=apply_changes).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="取消", command=dialog.destroy).pack(side=tk.LEFT, padx=10)
+    
+    def show_reading_stats(self):
+        """Show reading statistics dialog."""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("阅读统计")
+        dialog.geometry("400x350")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Current session stats
+        ttk.Label(dialog, text="📊 阅读统计", font=('', 14, 'bold')).pack(pady=15)
+        
+        stats_frame = ttk.LabelFrame(dialog, text="当前文件")
+        stats_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        if self.current_file:
+            filename = os.path.basename(self.current_file)
+            ttk.Label(stats_frame, text=f"文件: {filename}").pack(anchor='w', padx=10, pady=5)
+            ttk.Label(stats_frame, text=f"字符数: {self.char_count:,}").pack(anchor='w', padx=10, pady=2)
+            ttk.Label(stats_frame, text=f"预计字数: {self.word_count:,}").pack(anchor='w', padx=10, pady=2)
+            
+            # Reading progress
+            progress = self.text_widget.yview()
+            read_percent = int(progress[0] * 100)
+            ttk.Label(stats_frame, text=f"阅读进度: {read_percent}%").pack(anchor='w', padx=10, pady=2)
+            
+            # Session reading time
+            if self.reading_start_time:
+                session_time = int(time.time() - self.reading_start_time)
+                mins = session_time // 60
+                secs = session_time % 60
+                ttk.Label(stats_frame, text=f"本次阅读时间: {mins} 分 {secs} 秒").pack(anchor='w', padx=10, pady=2)
+            
+            # Estimated remaining time (only show if progress > 5% to avoid huge estimates)
+            if read_percent >= 5 and self.reading_start_time:
+                session_time = time.time() - self.reading_start_time
+                if session_time > 60:  # Only show if reading for more than 1 minute
+                    remaining_percent = 100 - read_percent
+                    estimated_remaining = (session_time / read_percent) * remaining_percent
+                    rem_mins = int(estimated_remaining // 60)
+                    ttk.Label(stats_frame, text=f"预计剩余时间: 约 {rem_mins} 分钟").pack(anchor='w', padx=10, pady=2)
+        else:
+            ttk.Label(stats_frame, text="(未打开文件)").pack(padx=10, pady=10)
+        
+        # Tip
+        tip_frame = ttk.LabelFrame(dialog, text="阅读建议")
+        tip_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        tips = [
+            "💡 每阅读 45 分钟，休息 10-15 分钟",
+            "💡 调整字号和行间距可提高阅读舒适度",
+            "💡 护眼绿和羊皮纸主题适合长时间阅读",
+            "💡 使用书签功能标记重要位置"
+        ]
+        for tip in tips:
+            ttk.Label(tip_frame, text=tip).pack(anchor='w', padx=10, pady=2)
+        
+        ttk.Button(dialog, text="关闭", command=dialog.destroy).pack(pady=15)
+    
     def open_scroll_speed_settings(self):
         """Open auto-scroll speed settings dialog."""
         dialog = tk.Toplevel(self.root)
@@ -1519,22 +1647,23 @@ class TextReader:
         about_text = """
 TextReader 文本阅读器
 
-版本: 1.4.0
+版本: 1.5.0
 
 一个简洁优雅的文本阅读器，
 专为舒适阅读体验而设计。
+参考 Koodo Reader 优化。
 
 功能特点:
 • 支持 TXT 等多种文本格式
-• 自定义字体、字号
-• 多种护眼主题
+• 自定义字体、字号、间距
+• 12种精选护眼主题
 • 自定义背景和文字颜色
-• 阅读进度跟踪
+• 阅读进度和时间统计
 • 书签功能
 • 自动滚动
 • 全屏阅读模式
 • 4K/高DPI屏幕支持
-• 快速查找功能（渐进式搜索）
+• 渐进式搜索
 • 自动目录导航
 • 界面缩放（80%-200%）
 • 平滑翻页和滚动
