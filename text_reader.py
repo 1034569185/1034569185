@@ -330,8 +330,16 @@ class TextReader:
         self.search_page_frame.pack(side=tk.RIGHT)
         
         ttk.Button(self.search_page_frame, text="◀", width=3, command=self.prev_search_page).pack(side=tk.LEFT, padx=2)
-        self.search_page_label = ttk.Label(self.search_page_frame, text="1/1")
-        self.search_page_label.pack(side=tk.LEFT, padx=5)
+        
+        # Page jump input field
+        self.search_page_var = tk.StringVar(value="1")
+        self.search_page_entry = ttk.Entry(self.search_page_frame, textvariable=self.search_page_var, width=4, justify='center')
+        self.search_page_entry.pack(side=tk.LEFT, padx=2)
+        self.search_page_entry.bind('<Return>', lambda e: self.jump_to_search_page())
+        
+        self.search_page_label = ttk.Label(self.search_page_frame, text="/ 1")
+        self.search_page_label.pack(side=tk.LEFT, padx=2)
+        
         ttk.Button(self.search_page_frame, text="▶", width=3, command=self.next_search_page).pack(side=tk.LEFT, padx=2)
         
         ttk.Separator(self.search_results_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, padx=5)
@@ -974,7 +982,8 @@ class TextReader:
         if total == 0:
             self.search_results_text.insert(tk.END, "\n  无搜索结果\n\n  请在搜索框输入关键词")
             self.search_results_info_label.config(text="")
-            self.search_page_label.config(text="0/0")
+            self.search_page_var.set("0")
+            self.search_page_label.config(text="/ 0")
             self.search_results_text.config(state=tk.DISABLED)
             return
         
@@ -996,7 +1005,8 @@ class TextReader:
         
         # Update info labels
         self.search_results_info_label.config(text=f"共 {total} 个结果")
-        self.search_page_label.config(text=f"{current_page + 1}/{total_pages}")
+        self.search_page_var.set(str(current_page + 1))
+        self.search_page_label.config(text=f"/ {total_pages}")
         
         # Display results for current page
         for i, result in enumerate(self.search_results_data[start_idx:end_idx]):
@@ -1067,6 +1077,27 @@ class TextReader:
             self.search_results_page += 1
             self.display_search_results_page()
     
+    def jump_to_search_page(self):
+        """Jump to a specific page number entered in the page entry field."""
+        try:
+            page_num = int(self.search_page_var.get())
+            total = len(self.search_results_data)
+            if total == 0:
+                return
+            total_pages = (total + self.search_results_per_page - 1) // self.search_results_per_page
+            
+            # Clamp page number to valid range
+            if page_num < 1:
+                page_num = 1
+            elif page_num > total_pages:
+                page_num = total_pages
+            
+            self.search_results_page = page_num - 1  # 0-indexed internally
+            self.display_search_results_page()
+        except ValueError:
+            # Invalid input, reset to current page
+            self.search_page_var.set(str(self.search_results_page + 1))
+    
     def on_search_result_click(self, event):
         """Handle click on search result (fallback)."""
         # This is a fallback - individual results have their own click handlers
@@ -1135,6 +1166,117 @@ class TextReader:
             # Refresh TOC when showing
             if not self.chapters:
                 self.generate_toc()
+            # Auto scroll to current chapter
+            self.scroll_toc_to_current_chapter()
+    
+    def get_current_chapter_index(self):
+        """Get the index of the chapter that user is currently reading."""
+        if not self.chapters:
+            return -1
+        
+        # Get current visible position in text widget
+        try:
+            # Get the first visible line
+            visible_top = self.text_widget.index("@0,0")
+            current_line = int(visible_top.split('.')[0])
+            
+            # Find the most recent chapter before current position
+            current_chapter_idx = -1
+            for i, chapter in enumerate(self.chapters):
+                if chapter['line'] <= current_line:
+                    current_chapter_idx = i
+                else:
+                    break
+            
+            return current_chapter_idx
+        except:
+            return -1
+    
+    def scroll_toc_to_current_chapter(self):
+        """Scroll the TOC to show the current chapter."""
+        current_idx = self.get_current_chapter_index()
+        if current_idx < 0:
+            return
+        
+        # Find the chapter in filtered_chapters
+        if not self.filtered_chapters:
+            return
+        
+        # Check if current chapter is in filtered list
+        current_chapter = self.chapters[current_idx]
+        try:
+            filtered_idx = self.filtered_chapters.index(current_chapter)
+        except ValueError:
+            # Current chapter not in filtered list, just return
+            return
+        
+        # Update display to highlight current chapter and scroll to it
+        self.display_toc_with_highlight(filtered_idx)
+    
+    def display_toc_with_highlight(self, highlight_idx):
+        """Display TOC with a specific chapter highlighted and scrolled into view."""
+        if not hasattr(self, 'toc_text'):
+            return
+        
+        self.toc_text.config(state=tk.NORMAL)
+        self.toc_text.delete('1.0', tk.END)
+        
+        if not self.filtered_chapters:
+            self.toc_text.config(state=tk.DISABLED)
+            return
+        
+        # Display chapters with clickable tags
+        for i, chapter in enumerate(self.filtered_chapters):
+            # Create unique tag for this chapter
+            tag_name = f"chapter_{i}"
+            
+            # Highlight current chapter with different style
+            if i == highlight_idx:
+                self.toc_text.tag_configure(tag_name, foreground='#FFFFFF', background='#1976D2')
+            else:
+                self.toc_text.tag_configure(tag_name, foreground='#333333')
+            
+            # Find original index in chapters list
+            original_idx = self.chapters.index(chapter)
+            
+            # Bind click event
+            self.toc_text.tag_bind(tag_name, '<Button-1>', 
+                lambda e, idx=original_idx: self.jump_to_chapter(idx))
+            
+            if i != highlight_idx:
+                self.toc_text.tag_bind(tag_name, '<Enter>', 
+                    lambda e, t=tag_name: self.toc_text.tag_configure(t, foreground='#1976D2', underline=True))
+                self.toc_text.tag_bind(tag_name, '<Leave>', 
+                    lambda e, t=tag_name: self.toc_text.tag_configure(t, foreground='#333333', underline=False))
+            
+            # Insert chapter number
+            chapter_num = i + 1
+            if i == highlight_idx:
+                self.toc_text.insert(tk.END, f"\n {chapter_num:3d}. ", tag_name)
+            else:
+                self.toc_text.insert(tk.END, f"\n {chapter_num:3d}. ", 'chapter_num')
+            
+            # Insert chapter title (clickable), truncate if too long
+            title = chapter['title']
+            max_len = self.MAX_TOC_TITLE_DISPLAY_LENGTH
+            if len(title) > max_len:
+                title = title[:max_len - 3] + "..."
+            self.toc_text.insert(tk.END, f"{title}", tag_name)
+            
+            # Insert line number
+            if i == highlight_idx:
+                self.toc_text.insert(tk.END, f"  (行 {chapter['line']})", tag_name)
+            else:
+                self.toc_text.insert(tk.END, f"  (行 {chapter['line']})", 'chapter_num')
+        
+        self.toc_text.insert(tk.END, "\n")
+        self.toc_text.config(state=tk.DISABLED)
+        
+        # Scroll to make the highlighted chapter visible
+        if highlight_idx >= 0:
+            # Calculate approximate line position (each chapter takes about 1 line + newline)
+            approx_line = highlight_idx + 1
+            self.toc_text.see(f"{approx_line}.0")
     
     def refresh_toc(self):
         """Refresh the table of contents."""
