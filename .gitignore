@@ -1,0 +1,28 @@
+# Maven build artifacts
+BookStore/target/
+*.class
+
+# IDE files
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Spring Boot packed jar/war (keep only sources)
+*.jar
+*.war
+
+# H2 database file (if file-based)
+*.db
+*.mv.db
+*.trace.db
