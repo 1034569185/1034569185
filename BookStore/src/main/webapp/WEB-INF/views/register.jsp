@@ -6,24 +6,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册 - BookStore</title>
+    <%-- 先引入公共样式，再引入注册页专属样式 --%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/common.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/register.css">
 </head>
 <body>
 
 <div class="page-wrapper">
-    <!-- 顶部标题栏 -->
-    <header class="site-header">
-        <div class="logo">
-            <span class="logo-icon">📚</span>
-            <span class="logo-text">BookStore</span>
-        </div>
-        <nav class="header-nav">
-            <a href="#">首页</a>
-            <a href="#">书城</a>
-            <a href="#" class="active">注册</a>
-            <a href="#">登录</a>
-        </nav>
-    </header>
+    <%-- 使用 include 指令包含公共头部 --%>
+    <%@ include file="head.jsp" %>
+
+    <%-- 使用 include 指令包含搜索/分类菜单 --%>
+    <%@ include file="menu_search.jsp" %>
 
     <!-- 主要内容区 -->
     <main class="main-content">
@@ -240,9 +234,8 @@
         </div>
     </main>
 
-    <footer class="site-footer">
-        <p>&copy; 2024 BookStore. All rights reserved.</p>
-    </footer>
+    <%-- 使用 include 指令包含公共页脚 --%>
+    <%@ include file="foot.jsp" %>
 </div>
 
 <script src="${pageContext.request.contextPath}/static/js/register.js"></script>

@@ -1,0 +1,299 @@
+/* ========================================
+   BookStore - index.css
+   首页专属样式（广告轮播 + 图书列表 + 侧边栏）
+   ======================================== */
+
+/* ════════════════════════════════════════
+   广告轮播
+   ════════════════════════════════════════ */
+.carousel-section {
+    max-width: 1200px;
+    margin: 16px auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.carousel {
+    flex: 1;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    background: #1e293b;
+    min-height: 200px;
+}
+
+.carousel-slide {
+    display: none;
+    width: 100%;
+}
+
+.carousel-slide.active { display: block; }
+
+.carousel-slide img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+/* 左右箭头 */
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,.45);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background .2s;
+    z-index: 10;
+    line-height: 1;
+}
+
+.carousel-btn:hover { background: rgba(0,0,0,.7); }
+.carousel-prev { left: 10px; }
+.carousel-next { right: 10px; }
+
+/* 指示点 */
+.carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.5);
+    cursor: pointer;
+    transition: background .2s;
+}
+
+.dot.active { background: white; }
+
+/* 侧边广告 */
+.side-ads {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.side-ad {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    background: #f0f4ff;
+    min-height: 80px;
+}
+
+.side-ad img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* ════════════════════════════════════════
+   主内容区（图书 + 侧边栏）
+   ════════════════════════════════════════ */
+.main-section {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* 图书区域 */
+.book-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.section-title {
+    margin-bottom: 16px;
+    border-left: 4px solid #3b82f6;
+    padding-left: 10px;
+}
+
+.section-title img {
+    height: 30px;
+    vertical-align: middle;
+}
+
+.section-title h2 {
+    font-size: 20px;
+    color: #1e293b;
+}
+
+/* 图书卡片网格 */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.book-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    transition: transform .2s, box-shadow .2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(59,130,246,.18);
+    border-color: #93c5fd;
+}
+
+.book-cover {
+    height: 150px;
+    background: #f8faff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.book-cover img {
+    max-height: 130px;
+    width: auto;
+    object-fit: contain;
+}
+
+.book-info {
+    padding: 10px 12px;
+    flex: 1;
+}
+
+.book-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-author {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.book-price {
+    font-size: 13px;
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.book-price span { font-size: 18px; }
+
+.book-actions {
+    padding: 8px 12px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-buy, .btn-cart {
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-buy img, .btn-cart img { height: 26px; }
+
+/* ════════════════════════════════════════
+   侧边栏
+   ════════════════════════════════════════ */
+.sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sidebar-block {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.sidebar-title {
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 14px;
+}
+
+.notice-list {
+    list-style: none;
+    padding: 8px 0;
+}
+
+.notice-list li a {
+    display: block;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background .15s;
+}
+
+.notice-list li a:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+}
+
+.quick-link img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ════════════════════════════════════════
+   响应式
+   ════════════════════════════════════════ */
+@media (max-width: 900px) {
+    .book-grid { grid-template-columns: repeat(2, 1fr); }
+    .side-ads { display: none; }
+    .sidebar  { display: none; }
+    .main-section { padding: 0 12px; }
+}
+
+@media (max-width: 600px) {
+    .book-grid { grid-template-columns: 1fr; }
+    .carousel-section { padding: 0 12px; }
+}

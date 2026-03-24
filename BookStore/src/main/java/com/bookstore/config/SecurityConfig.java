@@ -20,10 +20,16 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                // 允许访问注册、验证码、静态资源、H2控制台
-                .antMatchers("/user/register", "/captcha/**", "/static/**",
-                             "/css/**", "/js/**", "/images/**",
-                             "/h2-console/**", "/user/checkUsername", "/user/checkEmail")
+                // 允许访问首页、注册、验证码、静态资源、H2控制台、后台管理
+                .antMatchers(
+                        "/", "/index",
+                        "/user/register", "/user/login",
+                        "/captcha/**",
+                        "/static/**", "/css/**", "/js/**", "/images/**",
+                        "/h2-console/**",
+                        "/user/checkUsername", "/user/checkEmail",
+                        "/admin/**"
+                )
                 .permitAll()
                 .anyRequest().authenticated()
             .and()

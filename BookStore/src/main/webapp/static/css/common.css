@@ -1,0 +1,271 @@
+/* ========================================
+   BookStore - common.css
+   公共头部 / 搜索栏 / 页脚 共享样式
+   ======================================== */
+
+/* ── 全局重置（只在 common.css 中定义一次）── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #f5f7fa;
+    color: #1e293b;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── 页面外层容器 ── */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ════════════════════════════════════════
+   顶部 Header
+   ════════════════════════════════════════ */
+.site-header {
+    background: #1e293b;
+    color: #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-img {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.logo-fallback {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon { font-size: 28px; }
+
+.logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #60a5fa;
+    letter-spacing: -0.5px;
+}
+
+/* 右侧按钮 */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.header-user {
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.header-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    font-size: 14px;
+    transition: all .2s;
+}
+
+.header-btn:hover {
+    background: #334155;
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+.header-btn-primary {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.header-btn-primary:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+.header-cart {
+    font-size: 20px;
+    color: #fbbf24;
+    position: relative;
+}
+
+.cart-count {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ════════════════════════════════════════
+   搜索 + 分类菜单栏
+   ════════════════════════════════════════ */
+.menu-search-bar {
+    background: #2563eb;
+    padding: 10px 0 0;
+}
+
+.search-form {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 10px;
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    height: 40px;
+}
+
+.search-category {
+    padding: 0 12px;
+    border: none;
+    border-radius: 4px 0 0 4px;
+    background: #1d4ed8;
+    color: #e0e7ff;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    min-width: 110px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0 14px;
+    border: none;
+    background: white;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-btn {
+    background: #fbbf24;
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    align-items: center;
+    transition: background .2s;
+}
+
+.search-btn:hover { background: #f59e0b; }
+
+.search-btn img { height: 22px; }
+
+/* 分类导航 */
+.category-nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.category-nav::-webkit-scrollbar { display: none; }
+
+.cat-link {
+    color: #e0e7ff;
+    font-size: 14px;
+    padding: 8px 18px;
+    white-space: nowrap;
+    transition: background .2s;
+    border-radius: 4px 4px 0 0;
+}
+
+.cat-link:hover,
+.cat-link.active {
+    background: rgba(255,255,255,.15);
+    color: white;
+}
+
+/* ════════════════════════════════════════
+   页脚
+   ════════════════════════════════════════ */
+.site-footer {
+    background: #0f172a;
+    color: #64748b;
+    margin-top: auto;
+    padding: 20px 0;
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    text-align: center;
+}
+
+.footer-links {
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.footer-links a {
+    color: #94a3b8;
+    margin: 0 4px;
+    transition: color .2s;
+}
+
+.footer-links a:hover { color: #60a5fa; }
+
+.footer-links .sep { color: #334155; }
+
+.footer-copy {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.footer-gif { height: 20px; }
+
+/* ════════════════════════════════════════
+   响应式
+   ════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .header-inner { padding: 0 12px; }
+    .search-form  { padding: 0 12px 10px; }
+    .category-nav { padding: 0 12px; }
+    .search-category { min-width: 80px; font-size: 12px; }
+    .header-user  { display: none; }
+}

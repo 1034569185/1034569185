@@ -9,8 +9,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
+    /**
+     * 根路径 → 首页
+     */
     @GetMapping("/")
     public String home() {
-        return "redirect:/user/register";
+        return "index";
+    }
+
+    /**
+     * 后台管理欢迎页
+     */
+    @GetMapping("/admin/welcome")
+    public String adminWelcome() {
+        return "admin/welcome";
     }
 }
