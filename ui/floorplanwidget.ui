@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FloorPlanWidget</class>
+ <widget class="QWidget" name="FloorPlanWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>设置平面图</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <!-- 工具栏 -->
+    <layout class="QHBoxLayout" name="toolbarLayout">
+     <item>
+      <widget class="QPushButton" name="btnSelectImage">
+       <property name="text">
+        <string>选择平面图</string>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { background-color: #27ae60; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #229954; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblAreaName">
+       <property name="text">
+        <string>区域名称:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="txtAreaName">
+       <property name="placeholderText">
+        <string>请输入区域名称</string>
+       </property>
+       <property name="minimumWidth">
+        <number>150</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text">
+        <string>保 存</string>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { background-color: #3498db; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #2980b9; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="toolSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <!-- 主内容区：左侧仪表列表 + 右侧平面图 -->
+    <layout class="QHBoxLayout" name="contentLayout">
+     <item>
+      <!-- 左侧：可拖拽的仪表列表 -->
+      <widget class="QGroupBox" name="grpDeviceList">
+       <property name="title">
+        <string>仪表列表（拖拽到平面图上）</string>
+       </property>
+       <property name="maximumWidth">
+        <number>200</number>
+       </property>
+       <layout class="QVBoxLayout" name="deviceListLayout">
+        <item>
+         <widget class="QListWidget" name="lstAvailableDevices">
+          <property name="dragEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="dragDropMode">
+           <enum>QAbstractItemView::DragOnly</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <!-- 右侧：平面图显示区 -->
+      <widget class="QGroupBox" name="grpFloorPlan">
+       <property name="title">
+        <string>平面图</string>
+       </property>
+       <layout class="QVBoxLayout" name="floorPlanLayout">
+        <item>
+         <widget class="QScrollArea" name="floorPlanScrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="floorPlanCanvas">
+           <property name="styleSheet">
+            <string>QWidget#floorPlanCanvas { background-color: #f0f0f0; border: 1px dashed #bdc3c7; }</string>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>600</width>
+             <height>400</height>
+            </size>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblHint">
+     <property name="text">
+      <string>提示：从左侧仪表列表拖拽仪表到平面图上以设置仪表位置</string>
+     </property>
+     <property name="styleSheet">
+      <string>QLabel { color: #7f8c8d; font-size: 12px; }</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

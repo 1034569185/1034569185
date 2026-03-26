@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DataQueryWidget</class>
+ <widget class="QWidget" name="DataQueryWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1100</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>数据查询</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <!-- 查询条件区 -->
+    <widget class="QGroupBox" name="queryGroupBox">
+     <property name="title">
+      <string>查询条件</string>
+     </property>
+     <layout class="QHBoxLayout" name="queryLayout">
+      <item>
+       <widget class="QLabel" name="lblStartTime">
+        <property name="text">
+         <string>开始时间:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDateTimeEdit" name="dtStartTime">
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+        <property name="minimumWidth">
+         <number>160</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblEndTime">
+        <property name="text">
+         <string>结束时间:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDateTimeEdit" name="dtEndTime">
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+        <property name="minimumWidth">
+         <number>160</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblDevice">
+        <property name="text">
+         <string>仪表名称:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cmbDevice">
+        <property name="minimumWidth">
+         <number>150</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>所有设备</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblFilter">
+        <property name="text">
+         <string>包含:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkFilter">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="txtFilter">
+        <property name="placeholderText">
+         <string>过滤关键字</string>
+        </property>
+        <property name="minimumWidth">
+         <number>120</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnQuery">
+        <property name="text">
+         <string>查 询</string>
+        </property>
+        <property name="styleSheet">
+         <string>QPushButton { background-color: #3498db; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #2980b9; }</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnExportPDF">
+        <property name="text">
+         <string>PDF导出</string>
+        </property>
+        <property name="styleSheet">
+         <string>QPushButton { background-color: #e74c3c; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #c0392b; }</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="querySpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!-- 数据类型选择 -->
+    <layout class="QHBoxLayout" name="dataTypeLayout">
+     <item>
+      <widget class="QLabel" name="lblDataType">
+       <property name="text">
+        <string>显示数据:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="rbAllData">
+       <property name="text">
+        <string>全部数据</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="rbNormalData">
+       <property name="text">
+        <string>正常数据</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="rbAbnormalData">
+       <property name="text">
+        <string>异常数据</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="dataTypeSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <!-- 主内容区：左侧设备树 + 右侧数据 -->
+    <layout class="QHBoxLayout" name="contentLayout">
+     <item>
+      <!-- 左侧设备列表 -->
+      <widget class="QListWidget" name="lstDevices">
+       <property name="maximumWidth">
+        <number>180</number>
+       </property>
+       <property name="minimumWidth">
+        <number>150</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!-- 右侧选项卡（列表/曲线/统计） -->
+      <widget class="QTabWidget" name="tabWidget">
+       <widget class="QWidget" name="tabList">
+        <attribute name="title">
+         <string>数据列表</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="tabListLayout">
+         <item>
+          <widget class="QTableWidget" name="tableData">
+           <property name="columnCount">
+            <number>7</number>
+           </property>
+           <attribute name="horizontalHeaderStretch">
+            <bool>true</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>记录时间</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>仪表名称</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>温度(°C)</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>湿度(%RH)</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>状态</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>处理人</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>采取措施</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabTempChart">
+        <attribute name="title">
+         <string>温度曲线</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="tempChartLayout">
+         <item>
+          <widget class="QWidget" name="tempChartView" native="true">
+           <!-- Qt Charts view will be inserted here programmatically -->
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabHumidChart">
+        <attribute name="title">
+         <string>湿度曲线</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="humidChartLayout">
+         <item>
+          <widget class="QWidget" name="humidChartView" native="true">
+           <!-- Qt Charts view will be inserted here programmatically -->
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabStats">
+        <attribute name="title">
+         <string>统计报表</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="statsLayout">
+         <item>
+          <widget class="QTableWidget" name="tableStats">
+           <property name="columnCount">
+            <number>8</number>
+           </property>
+           <column>
+            <property name="text">
+             <string>仪表名称</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>最高温度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>最低温度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>平均温度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>最高湿度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>最低湿度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>平均湿度</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>超限次数</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

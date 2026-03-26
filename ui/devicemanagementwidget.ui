@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DeviceManagementWidget</class>
+ <widget class="QWidget" name="DeviceManagementWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>680</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>设备管理</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <!-- 左侧设备列表 -->
+    <widget class="QGroupBox" name="grpDeviceList">
+     <property name="title">
+      <string>设备列表</string>
+     </property>
+     <property name="maximumWidth">
+      <number>280</number>
+     </property>
+     <layout class="QVBoxLayout" name="deviceListLayout">
+      <item>
+       <layout class="QHBoxLayout" name="deviceToolLayout">
+        <item>
+         <widget class="QPushButton" name="btnAddDevice">
+          <property name="text">
+           <string>添加</string>
+          </property>
+          <property name="styleSheet">
+           <string>QPushButton { background-color: #27ae60; color: white; padding: 5px 10px; border: none; border-radius: 3px; }
+QPushButton:hover { background-color: #229954; }</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnDeleteDevice">
+          <property name="text">
+           <string>删除</string>
+          </property>
+          <property name="styleSheet">
+           <string>QPushButton { background-color: #e74c3c; color: white; padding: 5px 10px; border: none; border-radius: 3px; }
+QPushButton:hover { background-color: #c0392b; }</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="deviceToolSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableDevices">
+        <property name="columnCount">
+         <number>3</number>
+        </property>
+        <attribute name="horizontalHeaderStretch">
+         <bool>true</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>名称</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>地址</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>状态</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!-- 右侧设备详情 -->
+    <widget class="QGroupBox" name="grpDeviceDetail">
+     <property name="title">
+      <string>仪表设置</string>
+     </property>
+     <layout class="QVBoxLayout" name="detailLayout">
+      <item>
+       <widget class="QTabWidget" name="tabDeviceSettings">
+        <widget class="QWidget" name="tabBasic">
+         <attribute name="title">
+          <string>基本设置</string>
+         </attribute>
+         <layout class="QFormLayout" name="basicFormLayout">
+          <property name="leftMargin">
+           <number>15</number>
+          </property>
+          <property name="topMargin">
+           <number>15</number>
+          </property>
+          <property name="rightMargin">
+           <number>15</number>
+          </property>
+          <property name="bottomMargin">
+           <number>15</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>12</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblName">
+            <property name="text">
+             <string>名称:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="txtDeviceName">
+            <property name="placeholderText">
+             <string>请输入记录仪名称</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblAddress">
+            <property name="text">
+             <string>通讯地址:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spinAddress">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>253</number>
+            </property>
+            <property name="toolTip">
+             <string>通讯地址范围：1-253，不可重复</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblEnabled">
+            <property name="text">
+             <string>是否启用:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="chkEnabled">
+            <property name="text">
+             <string>启用（采集实时数据）</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="lblArea">
+            <property name="text">
+             <string>区域:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="txtArea">
+            <property name="placeholderText">
+             <string>请输入区域名称</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabAlarmConfig">
+         <attribute name="title">
+          <string>报警设置</string>
+         </attribute>
+         <layout class="QFormLayout" name="alarmFormLayout">
+          <property name="leftMargin">
+           <number>15</number>
+          </property>
+          <property name="topMargin">
+           <number>15</number>
+          </property>
+          <property name="rightMargin">
+           <number>15</number>
+          </property>
+          <property name="bottomMargin">
+           <number>15</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>12</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lblTempHigh">
+            <property name="text">
+             <string>温度上限(°C):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinTempHigh">
+            <property name="minimum">
+             <double>-99.900000000000006</double>
+            </property>
+            <property name="maximum">
+             <double>99.900000000000006</double>
+            </property>
+            <property name="value">
+             <double>30.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lblTempLow">
+            <property name="text">
+             <string>温度下限(°C):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinTempLow">
+            <property name="minimum">
+             <double>-99.900000000000006</double>
+            </property>
+            <property name="maximum">
+             <double>99.900000000000006</double>
+            </property>
+            <property name="value">
+             <double>0.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lblHumidHigh">
+            <property name="text">
+             <string>湿度上限(%RH):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinHumidHigh">
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>80.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="lblHumidLow">
+            <property name="text">
+             <string>湿度下限(%RH):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="spinHumidLow">
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>20.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <spacer name="alarmSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </spacer>
+          </item>
+          <item row="5" column="0">
+           <widget class="QPushButton" name="btnWriteConfig">
+            <property name="text">
+             <string>写配置到仪表</string>
+            </property>
+            <property name="styleSheet">
+             <string>QPushButton { background-color: #e67e22; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #d35400; }</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="btnReadConfig">
+            <property name="text">
+             <string>从仪表读配置</string>
+            </property>
+            <property name="styleSheet">
+             <string>QPushButton { background-color: #8e44ad; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #7d3c98; }</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="saveLayout">
+        <item>
+         <spacer name="saveSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSave">
+          <property name="text">
+           <string>保 存</string>
+          </property>
+          <property name="minimumWidth">
+           <number>100</number>
+          </property>
+          <property name="styleSheet">
+           <string>QPushButton { background-color: #3498db; color: white; padding: 6px 20px; border: none; border-radius: 4px; }
+QPushButton:hover { background-color: #2980b9; }</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
