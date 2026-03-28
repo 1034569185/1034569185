@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QWidget>
+#include <QList>
+#include <QTreeWidgetItem>
 #include "database/dbmanager.h"
 
 QT_BEGIN_NAMESPACE
@@ -20,8 +22,11 @@ private slots:
     void onPrevPageClicked();
     void onNextPageClicked();
     void onTableCellChanged(int row, int col);
+    void onTreeItemChanged(QTreeWidgetItem *item, int column);
 
 private:
+    void populateDeviceTree();
+    QList<int> checkedDeviceIds() const;
     void populateTable();
 
     Ui::AlarmWidget *ui;

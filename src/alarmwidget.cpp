@@ -5,6 +5,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QHeaderView>
+#include <QSignalBlocker>
 
 AlarmWidget::AlarmWidget(DbManager *db, QWidget *parent)
     : QWidget(parent)
@@ -19,11 +21,34 @@ AlarmWidget::AlarmWidget(DbManager *db, QWidget *parent)
     ui->dtEndTime->setDateTime(now);
     ui->dtStartTime->setDateTime(now.addMonths(-1));
 
+    ui->treeDevices->setHeaderHidden(true);
+    populateDeviceTree();
+
     connect(ui->btnQuery, &QPushButton::clicked, this, &AlarmWidget::onQueryClicked);
     connect(ui->btnExportPDF, &QPushButton::clicked, this, &AlarmWidget::onExportPDFClicked);
     connect(ui->btnPrevPage, &QPushButton::clicked, this, &AlarmWidget::onPrevPageClicked);
     connect(ui->btnNextPage, &QPushButton::clicked, this, &AlarmWidget::onNextPageClicked);
     connect(ui->tableAlarm, &QTableWidget::cellChanged, this, &AlarmWidget::onTableCellChanged);
+    connect(ui->treeDevices, &QTreeWidget::itemChanged, this, &AlarmWidget::onTreeItemChanged);
+
+    QHeaderView *header = ui->tableAlarm->horizontalHeader();
+    if (header) {
+        header->setStretchLastSection(false);
+        header->setSectionResizeMode(0, QHeaderView::Fixed);
+        header->setSectionResizeMode(1, QHeaderView::Fixed);
+        header->setSectionResizeMode(2, QHeaderView::Fixed);
+        header->setSectionResizeMode(3, QHeaderView::Fixed);
+        header->setSectionResizeMode(4, QHeaderView::Fixed);
+        header->setSectionResizeMode(5, QHeaderView::Fixed);
+        header->setSectionResizeMode(6, QHeaderView::Stretch);
+
+        ui->tableAlarm->setColumnWidth(0, 160);
+        ui->tableAlarm->setColumnWidth(1, 120);
+        ui->tableAlarm->setColumnWidth(2, 160);
+        ui->tableAlarm->setColumnWidth(3, 90);
+        ui->tableAlarm->setColumnWidth(4, 90);
+        ui->tableAlarm->setColumnWidth(5, 160);
+    }
 
     // Make last column editable (处理人/采取措施)
     ui->tableAlarm->setEditTriggers(QAbstractItemView::DoubleClicked);
@@ -36,13 +61,66 @@ AlarmWidget::~AlarmWidget()
 
 void AlarmWidget::onQueryClicked()
 {
-    m_allRecords = m_db->queryAlarmRecords(
+    const QList<int> selectedIds = checkedDeviceIds();
+    const QList<AlarmRecord> allRecords = m_db->queryAlarmRecords(
         ui->dtStartTime->dateTime(),
         ui->dtEndTime->dateTime());
+    m_allRecords.clear();
+    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
+    const bool allSelected = root && root->checkState(0) == Qt::Checked;
+    if (allSelected) {
+        m_allRecords = allRecords;
+    } else if (selectedIds.isEmpty()) {
+        m_allRecords.clear();
+    } else {
+        for (const AlarmRecord &record : allRecords) {
+            if (selectedIds.contains(record.deviceId)) {
+                m_allRecords.append(record);
+            }
+        }
+    }
     m_currentPage = 1;
     int pageRows = ui->spinPageRows->value();
     m_totalPages = qMax(1, (m_allRecords.size() + pageRows - 1) / pageRows);
     populateTable();
+}
+
+void AlarmWidget::populateDeviceTree()
+{
+    ui->treeDevices->clear();
+    QTreeWidgetItem *root = new QTreeWidgetItem(ui->treeDevices);
+    root->setText(0, tr("全选"));
+    root->setFlags(root->flags() | Qt::ItemIsUserCheckable);
+    root->setCheckState(0, Qt::Checked);
+    root->setData(0, Qt::UserRole, -1);
+
+    QList<DeviceInfo> devices = m_db->getAllDevices();
+    for (const DeviceInfo &dev : devices) {
+        if (!dev.enabled) continue;
+        QTreeWidgetItem *child = new QTreeWidgetItem(root);
+        child->setText(0, dev.name);
+        child->setFlags(child->flags() | Qt::ItemIsUserCheckable);
+        child->setCheckState(0, Qt::Checked);
+        child->setData(0, Qt::UserRole, dev.id);
+    }
+    root->setExpanded(true);
+}
+
+QList<int> AlarmWidget::checkedDeviceIds() const
+{
+    QList<int> ids;
+    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
+    if (!root) return ids;
+    if (root->checkState(0) == Qt::Checked) {
+        return ids;
+    }
+    for (int i = 0; i < root->childCount(); ++i) {
+        QTreeWidgetItem *child = root->child(i);
+        if (child && child->checkState(0) == Qt::Checked) {
+            ids.append(child->data(0, Qt::UserRole).toInt());
+        }
+    }
+    return ids;
 }
 
 void AlarmWidget::populateTable()
@@ -109,6 +187,43 @@ void AlarmWidget::onTableCellChanged(int row, int col)
         measures = text;
     }
     m_db->updateAlarmRemark(alarmId, handler, measures);
+}
+
+void AlarmWidget::onTreeItemChanged(QTreeWidgetItem *item, int column)
+{
+    if (!item || column != 0) return;
+    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
+    if (!root) return;
+    QSignalBlocker blocker(ui->treeDevices);
+
+    if (item == root) {
+        Qt::CheckState st = root->checkState(0);
+        for (int i = 0; i < root->childCount(); ++i) {
+            if (QTreeWidgetItem *child = root->child(i)) {
+                child->setCheckState(0, st);
+            }
+        }
+        return;
+    }
+
+    bool allChecked = true;
+    bool anyChecked = false;
+    for (int i = 0; i < root->childCount(); ++i) {
+        if (QTreeWidgetItem *child = root->child(i)) {
+            if (child->checkState(0) == Qt::Checked) {
+                anyChecked = true;
+            } else {
+                allChecked = false;
+            }
+        }
+    }
+    if (allChecked) {
+        root->setCheckState(0, Qt::Checked);
+    } else if (anyChecked) {
+        root->setCheckState(0, Qt::PartiallyChecked);
+    } else {
+        root->setCheckState(0, Qt::Unchecked);
+    }
 }
 
 void AlarmWidget::onExportPDFClicked()

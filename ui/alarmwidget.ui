@@ -15,32 +15,40 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="topMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="rightMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="bottomMargin">
-    <number>10</number>
+    <number>8</number>
+   </property>
+   <property name="spacing">
+    <number>6</number>
    </property>
    <item>
-    <!-- 查询条件区 -->
     <widget class="QGroupBox" name="queryGroupBox">
      <property name="title">
-      <string>查询条件</string>
+      <string>查询设定</string>
      </property>
-     <layout class="QHBoxLayout" name="queryLayout">
-      <item>
+     <layout class="QGridLayout" name="queryLayout">
+      <property name="horizontalSpacing">
+       <number>8</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>4</number>
+      </property>
+      <item row="0" column="0">
        <widget class="QLabel" name="lblStartTime">
         <property name="text">
-         <string>开始时间:</string>
+         <string>开始时间</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
        <widget class="QDateTimeEdit" name="dtStartTime">
         <property name="displayFormat">
          <string>yyyy-MM-dd HH:mm:ss</string>
@@ -49,18 +57,18 @@
          <bool>true</bool>
         </property>
         <property name="minimumWidth">
-         <number>160</number>
+         <number>190</number>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0">
        <widget class="QLabel" name="lblEndTime">
         <property name="text">
-         <string>结束时间:</string>
+         <string>结束时间</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="1">
        <widget class="QDateTimeEdit" name="dtEndTime">
         <property name="displayFormat">
          <string>yyyy-MM-dd HH:mm:ss</string>
@@ -69,48 +77,56 @@
          <bool>true</bool>
         </property>
         <property name="minimumWidth">
-         <number>160</number>
+         <number>190</number>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="2">
        <widget class="QPushButton" name="btnQuery">
         <property name="text">
-         <string>查 询</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnExportPDF">
-        <property name="text">
-         <string>PDF导出</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="lblPageRows">
-        <property name="text">
-         <string>每页行数:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="spinPageRows">
-        <property name="minimum">
-         <number>10</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="value">
-         <number>30</number>
+         <string>查询</string>
         </property>
         <property name="minimumWidth">
-         <number>70</number>
+         <number>72</number>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btnExportPDF">
+        <property name="text">
+         <string>PDF</string>
+        </property>
+        <property name="minimumWidth">
+         <number>72</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" rowspan="2">
+       <widget class="QGroupBox" name="pdfGroupBox">
+        <property name="title">
+         <string>PDF每页行数</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QSpinBox" name="spinPageRows">
+           <property name="minimum">
+            <number>10</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>32</number>
+           </property>
+           <property name="minimumWidth">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="4" rowspan="2">
        <spacer name="querySpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -121,87 +137,144 @@
     </widget>
    </item>
    <item>
-    <!-- 报警数据表格 -->
-    <widget class="QTableWidget" name="tableAlarm">
-     <property name="columnCount">
-      <number>7</number>
+    <layout class="QHBoxLayout" name="contentLayout">
+     <property name="spacing">
+      <number>6</number>
      </property>
-     <attribute name="horizontalHeaderStretch">
-      <bool>true</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string>报警时间</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>仪表名称</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>报警类型</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>报警值</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>限值</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>恢复时间</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>处理人/采取措施</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item>
-    <!-- 分页控件 -->
-    <layout class="QHBoxLayout" name="paginationLayout">
      <item>
-      <widget class="QLabel" name="lblTotal">
-       <property name="text">
-        <string>共 0 条记录</string>
+      <widget class="QGroupBox" name="deviceSelectGroupBox">
+       <property name="title">
+        <string>仪表选择</string>
        </property>
+       <property name="minimumWidth">
+        <number>220</number>
+       </property>
+       <property name="maximumWidth">
+        <number>230</number>
+       </property>
+       <layout class="QVBoxLayout" name="deviceSelectLayout">
+        <item>
+         <layout class="QHBoxLayout" name="treeFilterLayout">
+          <item>
+           <widget class="QCheckBox" name="chkFilter">
+            <property name="text">
+             <string>包含</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="txtFilter">
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTreeWidget" name="treeDevices">
+          <property name="columnCount">
+           <number>1</number>
+          </property>
+          <property name="headerHidden">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
-      <spacer name="paginationSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QGroupBox" name="tableGroupBox">
+       <property name="title">
+        <string>数据显示</string>
        </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnPrevPage">
-       <property name="text">
-        <string>上一页</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="lblPageInfo">
-       <property name="text">
-        <string>第 1 页 / 共 1 页</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnNextPage">
-       <property name="text">
-        <string>下一页</string>
-       </property>
+       <layout class="QVBoxLayout" name="tableLayout">
+        <item>
+         <widget class="QTableWidget" name="tableAlarm">
+          <property name="columnCount">
+           <number>7</number>
+          </property>
+          <attribute name="horizontalHeaderStretch">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>报警时间</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>设备名</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>报警项目</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>报警值</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>限值</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>恢复时间</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>处理人/采取措施</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="paginationLayout">
+          <item>
+           <widget class="QLabel" name="lblTotal">
+            <property name="text">
+             <string>共 0 条记录</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="paginationSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnPrevPage">
+            <property name="text">
+             <string>上一页</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblPageInfo">
+            <property name="text">
+             <string>第 1 页 / 共 1 页</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnNextPage">
+            <property name="text">
+             <string>下一页</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
