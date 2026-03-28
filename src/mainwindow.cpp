@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QDateTime>
 #include <QDebug>
+#include <Qt>
 
 namespace {
 const char *kAlarmStatusLabelStyle = "QLabel { color: #e74c3c; font-size: 12px; }";
@@ -53,6 +54,13 @@ MainWindow::MainWindow(QWidget *parent)
             wgt->setStyleSheet(QString());
         }
     }
+
+    // Keep area tabs fixed-width and prevent full-row stretching
+    ui->areaTabBar->setExpanding(false);
+    ui->areaTabBar->setUsesScrollButtons(true);
+
+    // Ensure sensor cards always flow from top-left
+    ui->sensorGridLayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     // Open database
     if (!m_db->open()) {
@@ -205,7 +213,7 @@ void MainWindow::onAreaTabChanged(int index)
         SensorWidget *w = m_sensorWidgets.value(devId);
         if (w) {
             w->setVisible(true);
-            ui->sensorGridLayout->addWidget(w, row, col);
+            ui->sensorGridLayout->addWidget(w, row, col, Qt::AlignLeft | Qt::AlignTop);
             ++col;
             if (col >= cols) { col = 0; ++row; }
         }
