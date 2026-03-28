@@ -36,11 +36,7 @@ int main(int argc, char *argv[])
     // Load QSS skin from QSS-Skin-Builder package
     QFile skinFile(":/skin/blue.css");
     if (skinFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString skin = QString::fromUtf8(skinFile.readAll());
-        skin.append(
-            "\nQTabBar#areaTabBar::tab { min-width: 120px; max-width: 120px; }"
-        );
-        app.setStyleSheet(skin);
+        app.setStyleSheet(QString::fromUtf8(skinFile.readAll()));
         skinFile.close();
     }
 
