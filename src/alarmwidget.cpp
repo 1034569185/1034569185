@@ -94,14 +94,32 @@ void AlarmWidget::populateDeviceTree()
     root->setCheckState(0, Qt::Checked);
     root->setData(0, Qt::UserRole, -1);
 
+    QMap<QString, QList<DeviceInfo>> areaDevices;
     QList<DeviceInfo> devices = m_db->getAllDevices();
     for (const DeviceInfo &dev : devices) {
         if (!dev.enabled) continue;
-        QTreeWidgetItem *child = new QTreeWidgetItem(root);
-        child->setText(0, dev.name);
-        child->setFlags(child->flags() | Qt::ItemIsUserCheckable);
-        child->setCheckState(0, Qt::Checked);
-        child->setData(0, Qt::UserRole, dev.id);
+        const QString area = dev.area.trimmed().isEmpty() ? tr("未分区") : dev.area.trimmed();
+        areaDevices[area].append(dev);
+    }
+
+    QStringList areas = areaDevices.keys();
+    areas.sort(Qt::CaseInsensitive);
+    for (const QString &areaName : areas) {
+        QTreeWidgetItem *areaItem = new QTreeWidgetItem(root);
+        areaItem->setText(0, areaName);
+        areaItem->setFlags(areaItem->flags() | Qt::ItemIsUserCheckable);
+        areaItem->setCheckState(0, Qt::Checked);
+        areaItem->setData(0, Qt::UserRole, -1);
+
+        const QList<DeviceInfo> &list = areaDevices.value(areaName);
+        for (const DeviceInfo &dev : list) {
+            QTreeWidgetItem *child = new QTreeWidgetItem(areaItem);
+            child->setText(0, dev.name);
+            child->setFlags(child->flags() | Qt::ItemIsUserCheckable);
+            child->setCheckState(0, Qt::Checked);
+            child->setData(0, Qt::UserRole, dev.id);
+        }
+        areaItem->setExpanded(true);
     }
     root->setExpanded(true);
 }
@@ -114,13 +132,24 @@ QList<int> AlarmWidget::checkedDeviceIds() const
     if (root->checkState(0) == Qt::Checked) {
         return ids;
     }
-    for (int i = 0; i < root->childCount(); ++i) {
-        QTreeWidgetItem *child = root->child(i);
-        if (child && child->checkState(0) == Qt::Checked) {
+    appendCheckedDeviceIds(root, ids);
+    return ids;
+}
+
+void AlarmWidget::appendCheckedDeviceIds(QTreeWidgetItem *parent, QList<int> &ids) const
+{
+    if (!parent) return;
+    for (int i = 0; i < parent->childCount(); ++i) {
+        QTreeWidgetItem *child = parent->child(i);
+        if (!child) continue;
+        if (child->childCount() > 0) {
+            appendCheckedDeviceIds(child, ids);
+            continue;
+        }
+        if (child->checkState(0) == Qt::Checked) {
             ids.append(child->data(0, Qt::UserRole).toInt());
         }
     }
-    return ids;
 }
 
 void AlarmWidget::populateTable()
@@ -192,38 +221,49 @@ void AlarmWidget::onTableCellChanged(int row, int col)
 void AlarmWidget::onTreeItemChanged(QTreeWidgetItem *item, int column)
 {
     if (!item || column != 0) return;
-    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
-    if (!root) return;
     QSignalBlocker blocker(ui->treeDevices);
+    const Qt::CheckState st = item->checkState(0);
 
-    if (item == root) {
-        Qt::CheckState st = root->checkState(0);
-        for (int i = 0; i < root->childCount(); ++i) {
-            if (QTreeWidgetItem *child = root->child(i)) {
+    if (item->childCount() > 0) {
+        for (int i = 0; i < item->childCount(); ++i) {
+            if (QTreeWidgetItem *child = item->child(i)) {
                 child->setCheckState(0, st);
             }
         }
-        return;
     }
 
+    updateAncestorCheckState(item->parent());
+}
+
+void AlarmWidget::updateAncestorCheckState(QTreeWidgetItem *item)
+{
+    if (!item) return;
     bool allChecked = true;
     bool anyChecked = false;
-    for (int i = 0; i < root->childCount(); ++i) {
-        if (QTreeWidgetItem *child = root->child(i)) {
-            if (child->checkState(0) == Qt::Checked) {
+
+    for (int i = 0; i < item->childCount(); ++i) {
+        if (QTreeWidgetItem *child = item->child(i)) {
+            const Qt::CheckState cs = child->checkState(0);
+            if (cs == Qt::Checked) {
                 anyChecked = true;
+            } else if (cs == Qt::PartiallyChecked) {
+                anyChecked = true;
+                allChecked = false;
             } else {
                 allChecked = false;
             }
         }
     }
+
     if (allChecked) {
-        root->setCheckState(0, Qt::Checked);
+        item->setCheckState(0, Qt::Checked);
     } else if (anyChecked) {
-        root->setCheckState(0, Qt::PartiallyChecked);
+        item->setCheckState(0, Qt::PartiallyChecked);
     } else {
-        root->setCheckState(0, Qt::Unchecked);
+        item->setCheckState(0, Qt::Unchecked);
     }
+
+    updateAncestorCheckState(item->parent());
 }
 
 void AlarmWidget::onExportPDFClicked()

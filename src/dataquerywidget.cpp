@@ -13,6 +13,11 @@
 #include <QDateTime>
 #include <QVBoxLayout>
 #include <QDir>
+#include <QRegularExpression>
+#include <QSignalBlocker>
+#include <QHeaderView>
+#include <QMap>
+#include <limits>
 
 #include <QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -23,6 +28,8 @@ DataQueryWidget::DataQueryWidget(DbManager *db, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::DataQueryWidget)
     , m_db(db)
+    , m_tempChartView(nullptr)
+    , m_humidChartView(nullptr)
 {
     ui->setupUi(this);
 
@@ -35,23 +42,106 @@ DataQueryWidget::DataQueryWidget(DbManager *db, QWidget *parent)
 
     connect(ui->btnQuery, &QPushButton::clicked, this, &DataQueryWidget::onQueryClicked);
     connect(ui->btnExportPDF, &QPushButton::clicked, this, &DataQueryWidget::onExportPDFClicked);
+    connect(ui->treeDevices, &QTreeWidget::itemChanged, this, &DataQueryWidget::onTreeItemChanged);
 
     // Setup chart placeholders
-    QChartView *tempChartView = new QChartView(new QChart());
-    tempChartView->chart()->setTitle(tr("温度曲线"));
-    tempChartView->setRenderHint(QPainter::Antialiasing);
+    m_tempChartView = new QChartView(new QChart());
+    m_tempChartView->chart()->setTitle(tr("温度曲线"));
+    m_tempChartView->setRenderHint(QPainter::Antialiasing);
     QVBoxLayout *tempLayout = qobject_cast<QVBoxLayout*>(ui->tempChartLayout);
     if (tempLayout) {
-        tempLayout->addWidget(tempChartView);
+        tempLayout->addWidget(m_tempChartView);
     }
 
-    QChartView *humidChartView = new QChartView(new QChart());
-    humidChartView->chart()->setTitle(tr("湿度曲线"));
-    humidChartView->setRenderHint(QPainter::Antialiasing);
+    m_humidChartView = new QChartView(new QChart());
+    m_humidChartView->chart()->setTitle(tr("湿度曲线"));
+    m_humidChartView->setRenderHint(QPainter::Antialiasing);
     QVBoxLayout *humidLayout = qobject_cast<QVBoxLayout*>(ui->humidChartLayout);
     if (humidLayout) {
-        humidLayout->addWidget(humidChartView);
+        humidLayout->addWidget(m_humidChartView);
     }
+
+    QHeaderView *header = ui->tableData->horizontalHeader();
+    if (header) {
+        header->setStretchLastSection(false);
+        header->setSectionResizeMode(0, QHeaderView::Fixed);
+        header->setSectionResizeMode(1, QHeaderView::Fixed);
+        header->setSectionResizeMode(2, QHeaderView::Fixed);
+        header->setSectionResizeMode(3, QHeaderView::Fixed);
+        header->setSectionResizeMode(4, QHeaderView::Fixed);
+        header->setSectionResizeMode(5, QHeaderView::Fixed);
+        header->setSectionResizeMode(6, QHeaderView::Stretch);
+        ui->tableData->setColumnWidth(0, 165);
+        ui->tableData->setColumnWidth(1, 130);
+        ui->tableData->setColumnWidth(2, 90);
+        ui->tableData->setColumnWidth(3, 90);
+        ui->tableData->setColumnWidth(4, 100);
+        ui->tableData->setColumnWidth(5, 110);
+    }
+
+    ui->tableData->verticalHeader()->setDefaultSectionSize(24);
+    ui->tableData->setAlternatingRowColors(false);
+    ui->tableData->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableData->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableData->setSortingEnabled(true);
+
+    onQueryClicked();
+}
+
+QList<int> DataQueryWidget::checkedDeviceIds() const
+{
+    QList<int> ids;
+    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
+    if (!root) return ids;
+    if (root->checkState(0) == Qt::Checked) {
+        return ids;
+    }
+    appendCheckedDeviceIds(root, ids);
+    return ids;
+}
+
+void DataQueryWidget::appendCheckedDeviceIds(QTreeWidgetItem *parent, QList<int> &ids) const
+{
+    if (!parent) return;
+    for (int i = 0; i < parent->childCount(); ++i) {
+        QTreeWidgetItem *child = parent->child(i);
+        if (!child) continue;
+        if (child->childCount() > 0) {
+            appendCheckedDeviceIds(child, ids);
+            continue;
+        }
+        if (child->checkState(0) == Qt::Checked) {
+            ids.append(child->data(0, Qt::UserRole).toInt());
+        }
+    }
+}
+
+void DataQueryWidget::updateAncestorCheckState(QTreeWidgetItem *item)
+{
+    if (!item) return;
+    bool allChecked = true;
+    bool anyChecked = false;
+    for (int i = 0; i < item->childCount(); ++i) {
+        if (QTreeWidgetItem *child = item->child(i)) {
+            const Qt::CheckState cs = child->checkState(0);
+            if (cs == Qt::Checked) {
+                anyChecked = true;
+            } else if (cs == Qt::PartiallyChecked) {
+                anyChecked = true;
+                allChecked = false;
+            } else {
+                allChecked = false;
+            }
+        }
+    }
+    if (allChecked) {
+        item->setCheckState(0, Qt::Checked);
+    } else if (anyChecked) {
+        item->setCheckState(0, Qt::PartiallyChecked);
+    } else {
+        item->setCheckState(0, Qt::Unchecked);
+    }
+    updateAncestorCheckState(item->parent());
 }
 
 DataQueryWidget::~DataQueryWidget()
@@ -63,14 +153,42 @@ void DataQueryWidget::populateDeviceList()
 {
     ui->cmbDevice->clear();
     ui->cmbDevice->addItem(tr("所有设备"), -1);
-    ui->lstDevices->clear();
-    ui->lstDevices->addItem(tr("所有设备"));
+    ui->treeDevices->clear();
 
+    QTreeWidgetItem *root = new QTreeWidgetItem(ui->treeDevices);
+    root->setText(0, tr("全选"));
+    root->setFlags(root->flags() | Qt::ItemIsUserCheckable);
+    root->setCheckState(0, Qt::Checked);
+    root->setData(0, Qt::UserRole, -1);
+
+    QMap<QString, QList<DeviceInfo>> areaDevices;
     QList<DeviceInfo> devices = m_db->getAllDevices();
     for (const DeviceInfo &dev : devices) {
+        if (!dev.enabled) continue;
         ui->cmbDevice->addItem(dev.name, dev.id);
-        ui->lstDevices->addItem(dev.name);
+        const QString area = dev.area.trimmed().isEmpty() ? tr("未分区") : dev.area.trimmed();
+        areaDevices[area].append(dev);
     }
+
+    QStringList areas = areaDevices.keys();
+    areas.sort(Qt::CaseInsensitive);
+    for (const QString &areaName : areas) {
+        QTreeWidgetItem *areaItem = new QTreeWidgetItem(root);
+        areaItem->setText(0, areaName);
+        areaItem->setFlags(areaItem->flags() | Qt::ItemIsUserCheckable);
+        areaItem->setCheckState(0, Qt::Checked);
+        areaItem->setData(0, Qt::UserRole, -1);
+        const QList<DeviceInfo> list = areaDevices.value(areaName);
+        for (const DeviceInfo &dev : list) {
+            QTreeWidgetItem *devItem = new QTreeWidgetItem(areaItem);
+            devItem->setText(0, dev.name);
+            devItem->setFlags(devItem->flags() | Qt::ItemIsUserCheckable);
+            devItem->setCheckState(0, Qt::Checked);
+            devItem->setData(0, Qt::UserRole, dev.id);
+        }
+        areaItem->setExpanded(true);
+    }
+    root->setExpanded(true);
 }
 
 void DataQueryWidget::onQueryClicked()
@@ -78,6 +196,9 @@ void DataQueryWidget::onQueryClicked()
     QDateTime startTime = ui->dtStartTime->dateTime();
     QDateTime endTime = ui->dtEndTime->dateTime();
     int deviceId = ui->cmbDevice->currentData().toInt();
+    const QList<int> treeSelectedIds = checkedDeviceIds();
+    QTreeWidgetItem *root = ui->treeDevices->topLevelItem(0);
+    const bool treeAllSelected = root && root->checkState(0) == Qt::Checked;
 
     int dataType = 0;
     if (ui->rbNormalData->isChecked()) dataType = 1;
@@ -92,6 +213,17 @@ void DataQueryWidget::onQueryClicked()
         filtered.reserve(data.size());
         for (const SensorData &sd : data) {
             if (rx.match(sd.deviceName).hasMatch()) {
+                filtered.append(sd);
+            }
+        }
+        data = std::move(filtered);
+    }
+
+    if (!treeAllSelected) {
+        QList<SensorData> filtered;
+        filtered.reserve(data.size());
+        for (const SensorData &sd : data) {
+            if (treeSelectedIds.contains(sd.deviceId)) {
                 filtered.append(sd);
             }
         }
@@ -147,30 +279,77 @@ void DataQueryWidget::updateCharts(const QList<SensorData> &data)
         humidSeriesMap[sd.deviceName]->append(ms, sd.humidity);
     }
 
-    // Update temperature chart
     QChart *tempChart = new QChart();
     tempChart->setTitle(tr("温度曲线"));
+    tempChart->legend()->setVisible(true);
+    QChart *humidChart = new QChart();
+    humidChart->setTitle(tr("湿度曲线"));
+    humidChart->legend()->setVisible(true);
+
+    qint64 minMs = std::numeric_limits<qint64>::max();
+    qint64 maxMs = 0;
+    double minTemp = std::numeric_limits<double>::max();
+    double maxTemp = std::numeric_limits<double>::lowest();
+    double minHumid = std::numeric_limits<double>::max();
+    double maxHumid = std::numeric_limits<double>::lowest();
+
     for (QLineSeries *series : tempSeriesMap.values()) {
         tempChart->addSeries(series);
+        for (const QPointF &pt : series->points()) {
+            const qint64 ms = static_cast<qint64>(pt.x());
+            minMs = qMin(minMs, ms);
+            maxMs = qMax(maxMs, ms);
+            minTemp = qMin(minTemp, pt.y());
+            maxTemp = qMax(maxTemp, pt.y());
+        }
     }
-    if (!data.isEmpty()) {
-        QDateTimeAxis *axisX = new QDateTimeAxis;
-        axisX->setFormat("MM-dd HH:mm");
-        axisX->setTitleText(tr("时间"));
-        tempChart->addAxis(axisX, Qt::AlignBottom);
-
-        QValueAxis *axisY = new QValueAxis;
-        axisY->setTitleText(tr("温度 (°C)"));
-        tempChart->addAxis(axisY, Qt::AlignLeft);
-
-        for (QLineSeries *series : tempSeriesMap.values()) {
-            series->attachAxis(axisX);
-            series->attachAxis(axisY);
+    for (QLineSeries *series : humidSeriesMap.values()) {
+        humidChart->addSeries(series);
+        for (const QPointF &pt : series->points()) {
+            const qint64 ms = static_cast<qint64>(pt.x());
+            minMs = qMin(minMs, ms);
+            maxMs = qMax(maxMs, ms);
+            minHumid = qMin(minHumid, pt.y());
+            maxHumid = qMax(maxHumid, pt.y());
         }
     }
 
-    // Find and update chart views
-    // (In practice, we'd keep references to chart views)
+    if (!data.isEmpty()) {
+        QDateTimeAxis *tempX = new QDateTimeAxis;
+        tempX->setFormat("MM-dd HH:mm");
+        tempX->setTitleText(tr("时间"));
+        tempX->setRange(QDateTime::fromMSecsSinceEpoch(minMs), QDateTime::fromMSecsSinceEpoch(maxMs));
+        tempChart->addAxis(tempX, Qt::AlignBottom);
+
+        QValueAxis *tempY = new QValueAxis;
+        tempY->setTitleText(tr("温度(°C)"));
+        tempY->setRange(minTemp - 1.0, maxTemp + 1.0);
+        tempChart->addAxis(tempY, Qt::AlignLeft);
+
+        for (QLineSeries *series : tempSeriesMap.values()) {
+            series->attachAxis(tempX);
+            series->attachAxis(tempY);
+        }
+
+        QDateTimeAxis *humidX = new QDateTimeAxis;
+        humidX->setFormat("MM-dd HH:mm");
+        humidX->setTitleText(tr("时间"));
+        humidX->setRange(QDateTime::fromMSecsSinceEpoch(minMs), QDateTime::fromMSecsSinceEpoch(maxMs));
+        humidChart->addAxis(humidX, Qt::AlignBottom);
+
+        QValueAxis *humidY = new QValueAxis;
+        humidY->setTitleText(tr("湿度(%RH)"));
+        humidY->setRange(qMax(0.0, minHumid - 5.0), qMin(100.0, maxHumid + 5.0));
+        humidChart->addAxis(humidY, Qt::AlignLeft);
+
+        for (QLineSeries *series : humidSeriesMap.values()) {
+            series->attachAxis(humidX);
+            series->attachAxis(humidY);
+        }
+    }
+
+    if (m_tempChartView) m_tempChartView->setChart(tempChart);
+    if (m_humidChartView) m_humidChartView->setChart(humidChart);
 }
 
 void DataQueryWidget::onExportPDFClicked()
@@ -237,4 +416,21 @@ void DataQueryWidget::onExportPDFClicked()
 void DataQueryWidget::onDeviceSelectionChanged()
 {
     // Refresh query when device selection changes
+}
+
+void DataQueryWidget::onTreeItemChanged(QTreeWidgetItem *item, int column)
+{
+    if (!item || column != 0) return;
+    QSignalBlocker blocker(ui->treeDevices);
+    const Qt::CheckState st = item->checkState(0);
+
+    if (item->childCount() > 0) {
+        for (int i = 0; i < item->childCount(); ++i) {
+            if (QTreeWidgetItem *child = item->child(i)) {
+                child->setCheckState(0, st);
+            }
+        }
+    }
+
+    updateAncestorCheckState(item->parent());
 }

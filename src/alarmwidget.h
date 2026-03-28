@@ -27,6 +27,8 @@ private slots:
 private:
     void populateDeviceTree();
     QList<int> checkedDeviceIds() const;
+    void appendCheckedDeviceIds(QTreeWidgetItem *parent, QList<int> &ids) const;
+    void updateAncestorCheckState(QTreeWidgetItem *item);
     void populateTable();
 
     Ui::AlarmWidget *ui;
