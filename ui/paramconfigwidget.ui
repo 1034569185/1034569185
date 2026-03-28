@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ParamConfigWidget</class>
+ <widget class="QWidget" name="ParamConfigWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>750</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>参数配置</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>15</number>
+   </property>
+   <property name="topMargin">
+    <number>15</number>
+   </property>
+   <property name="rightMargin">
+    <number>15</number>
+   </property>
+   <property name="bottomMargin">
+    <number>15</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollContent">
+      <layout class="QFormLayout" name="formLayout">
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lblWarehouseName">
+         <property name="text">
+          <string>（1）库名（报警短信用）:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="txtWarehouseName">
+         <property name="toolTip">
+          <string>监测报警接收短信时显示的仓库名称</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lblRecordInterval">
+         <property name="text">
+          <string>（2）记录间隔（分钟）:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinRecordInterval">
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="maximum">
+          <number>30</number>
+         </property>
+         <property name="value">
+          <number>5</number>
+         </property>
+         <property name="toolTip">
+          <string>记录保存间隔（范围2-30分钟）</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lblAlarmVolume">
+         <property name="text">
+          <string>（3）报警音量（1-30）:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="spinAlarmVolume">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>30</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+         <property name="toolTip">
+          <string>语音报警音量，1为最小，30为最大</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lblAllAreaName">
+         <property name="text">
+          <string>（4）全部区域名称:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="txtAllAreaName">
+         <property name="text">
+          <string>全部</string>
+         </property>
+         <property name="toolTip">
+          <string>界面显示全部仪表的区域名称</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="lblSoftwareTitle">
+         <property name="text">
+          <string>（5）软件显示标题:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="txtSoftwareTitle">
+         <property name="text">
+          <string>鸿软温湿度监测系统</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="lblSendSmsOnRecover">
+         <property name="text">
+          <string>（6）恢复时发短信:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QCheckBox" name="chkSendSmsOnRecover">
+         <property name="text">
+          <string>启用</string>
+         </property>
+         <property name="toolTip">
+          <string>报警恢复时是否发送短信</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="lblSendSmsOnAlarm">
+         <property name="text">
+          <string>（7）超限时发短信:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QCheckBox" name="chkSendSmsOnAlarm">
+         <property name="text">
+          <string>启用</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>温湿度超限时是否发送短信</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="lblTargetIP">
+         <property name="text">
+          <string>（8）实时数据目标IP:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLineEdit" name="txtTargetIP">
+         <property name="placeholderText">
+          <string>本地IP或广播IP，多个用逗号分隔</string>
+         </property>
+         <property name="toolTip">
+          <string>本地网络IP，多个地址用英文逗号分隔</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="lblTargetPort">
+         <property name="text">
+          <string>（9）实时数据目标端口:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QSpinBox" name="spinTargetPort">
+         <property name="minimum">
+          <number>1024</number>
+         </property>
+         <property name="maximum">
+          <number>65535</number>
+         </property>
+         <property name="value">
+          <number>8080</number>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="lblBackupDir">
+         <property name="text">
+          <string>（10）数据库备份目录:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <layout class="QHBoxLayout" name="backupDirLayout">
+         <item>
+          <widget class="QLineEdit" name="txtBackupDir">
+           <property name="placeholderText">
+            <string>用|分隔多个目录</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnBrowseBackupDir">
+           <property name="text">
+            <string>浏览</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="lblPwdExpireDays">
+         <property name="text">
+          <string>（11）密码过期天数:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QSpinBox" name="spinPwdExpireDays">
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>365</number>
+         </property>
+         <property name="value">
+          <number>90</number>
+         </property>
+         <property name="toolTip">
+          <string>0表示永不过期</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QLabel" name="lblEnableEmail">
+         <property name="text">
+          <string>（12）启用邮件报警:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="chkEnableEmail">
+         <property name="text">
+          <string>启用</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QLabel" name="lblEmailAccount">
+         <property name="text">
+          <string>（13）邮箱账号:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QLineEdit" name="txtEmailAccount">
+         <property name="placeholderText">
+          <string>发件邮箱账号</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QLabel" name="lblEmailAuthCode">
+         <property name="text">
+          <string>（14）邮箱授权码:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
+        <widget class="QLineEdit" name="txtEmailAuthCode">
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
+         </property>
+         <property name="placeholderText">
+          <string>邮箱授权码（非登录密码）</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QLabel" name="lblHistoryDB">
+         <property name="text">
+          <string>（15）历史数据库:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QLineEdit" name="txtHistoryDB">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>数据库归档方式（不可修改）</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <widget class="QLabel" name="lblCurrentDB">
+         <property name="text">
+          <string>（16）当月数据库:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QLineEdit" name="txtCurrentDB">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>数据库备份方式（不可修改）</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="0">
+        <widget class="QLabel" name="lblBackupTime">
+         <property name="text">
+          <string>（17）每日备份开始时间:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <widget class="QTimeEdit" name="timeBackup">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="displayFormat">
+          <string>HH:mm</string>
+         </property>
+         <property name="toolTip">
+          <string>数据库备份时间（不可修改）</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="saveLayout">
+     <item>
+      <spacer name="saveSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text">
+        <string>保 存配置</string>
+       </property>
+       <property name="minimumWidth">
+        <number>120</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SiteManagementWidget</class>
+ <widget class="QWidget" name="SiteManagementWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>550</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>切换站点</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>15</number>
+   </property>
+   <property name="topMargin">
+    <number>15</number>
+   </property>
+   <property name="rightMargin">
+    <number>15</number>
+   </property>
+   <property name="bottomMargin">
+    <number>15</number>
+   </property>
+   <item>
+    <!-- 站点列表区域 -->
+    <widget class="QGroupBox" name="grpSiteList">
+     <property name="title">
+      <string>已配置站点</string>
+     </property>
+     <layout class="QVBoxLayout" name="siteListLayout">
+      <item>
+       <layout class="QHBoxLayout" name="siteToolLayout">
+        <item>
+         <widget class="QPushButton" name="btnAddSite">
+          <property name="text">
+           <string>新增站点</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnDeleteSite">
+          <property name="text">
+           <string>删除站点</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnConnectSite">
+          <property name="text">
+           <string>连接此站点</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="siteToolSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableSites">
+        <property name="columnCount">
+         <number>4</number>
+        </property>
+        <attribute name="horizontalHeaderStretch">
+         <bool>true</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>站点名称</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>主机名/IP</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>连接ID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>状态</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!-- 新增/编辑站点区域 -->
+    <widget class="QGroupBox" name="grpSiteEdit">
+     <property name="title">
+      <string>配置站点</string>
+     </property>
+     <layout class="QFormLayout" name="siteFormLayout">
+      <property name="leftMargin">
+       <number>15</number>
+      </property>
+      <property name="topMargin">
+       <number>15</number>
+      </property>
+      <property name="rightMargin">
+       <number>15</number>
+      </property>
+      <property name="bottomMargin">
+       <number>15</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>12</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblSiteName">
+        <property name="text">
+         <string>站点名称:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="txtSiteName">
+        <property name="placeholderText">
+         <string>请输入站点名称</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblHostname">
+        <property name="text">
+         <string>主机名/IP:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="txtHostname">
+        <property name="placeholderText">
+         <string>请输入主机名或IP地址</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblConnectID">
+        <property name="text">
+         <string>连接ID:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="txtConnectID">
+        <property name="placeholderText">
+         <string>请输入连接ID</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lblConnectPwd">
+        <property name="text">
+         <string>连接密码:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="txtConnectPwd">
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+        <property name="placeholderText">
+         <string>请输入连接密码</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="siteEditBtnLayout">
+        <item>
+         <spacer name="siteEditBtnSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSaveSite">
+          <property name="text">
+           <string>保存站点</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

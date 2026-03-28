@@ -1,0 +1,33 @@
+# Build output
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.so.*
+*.exe
+HongRuanTempHumidity
+
+# IDE files
+.vscode/
+.idea/
+*.user
+*.pro.user.*
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+install_manifest.txt
+
+# Qt generated files (auto-generated, should not be committed)
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*_autogen/
+
+# Misc
+*.bak
+*.swp
+*~
+.DS_Store

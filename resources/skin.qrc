@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="skin/blue.css">../assets/qss/blue.css</file>
+        <file alias="qss/blue/add_bottom.png">../assets/qss/blue/add_bottom.png</file>
+        <file alias="qss/blue/add_left.png">../assets/qss/blue/add_left.png</file>
+        <file alias="qss/blue/add_right.png">../assets/qss/blue/add_right.png</file>
+        <file alias="qss/blue/add_top.png">../assets/qss/blue/add_top.png</file>
+        <file alias="qss/blue/branch_close.png">../assets/qss/blue/branch_close.png</file>
+        <file alias="qss/blue/branch_open.png">../assets/qss/blue/branch_open.png</file>
+        <file alias="qss/blue/calendar_nextmonth.png">../assets/qss/blue/calendar_nextmonth.png</file>
+        <file alias="qss/blue/calendar_prevmonth.png">../assets/qss/blue/calendar_prevmonth.png</file>
+        <file alias="qss/blue/checkbox_checked.png">../assets/qss/blue/checkbox_checked.png</file>
+        <file alias="qss/blue/checkbox_checked_disable.png">../assets/qss/blue/checkbox_checked_disable.png</file>
+        <file alias="qss/blue/checkbox_parcial.png">../assets/qss/blue/checkbox_parcial.png</file>
+        <file alias="qss/blue/checkbox_parcial_disable.png">../assets/qss/blue/checkbox_parcial_disable.png</file>
+        <file alias="qss/blue/checkbox_unchecked.png">../assets/qss/blue/checkbox_unchecked.png</file>
+        <file alias="qss/blue/checkbox_unchecked_disable.png">../assets/qss/blue/checkbox_unchecked_disable.png</file>
+        <file alias="qss/blue/radiobutton_checked.png">../assets/qss/blue/radiobutton_checked.png</file>
+        <file alias="qss/blue/radiobutton_checked_disable.png">../assets/qss/blue/radiobutton_checked_disable.png</file>
+        <file alias="qss/blue/radiobutton_unchecked.png">../assets/qss/blue/radiobutton_unchecked.png</file>
+        <file alias="qss/blue/radiobutton_unchecked_disable.png">../assets/qss/blue/radiobutton_unchecked_disable.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SensorWidget</class>
+ <widget class="QWidget" name="SensorWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>200</width>
+    <height>160</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>180</width>
+    <height>150</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>250</width>
+    <height>185</height>
+   </size>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <item>
+    <!-- 记录仪名称 -->
+     <widget class="QLabel" name="lblSensorName">
+     <property name="text">
+      <string>记录仪名称</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignHCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="dataLayout">
+     <item>
+      <!-- 温湿度数值区域（左侧） -->
+      <layout class="QVBoxLayout" name="valueLayout">
+       <item>
+        <layout class="QHBoxLayout" name="tempLayout">
+         <item>
+          <widget class="QLabel" name="lblTempIcon">
+           <property name="text">
+            <string>🌡</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblTemperature">
+           <property name="text">
+            <string>--.-</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="humidLayout">
+         <item>
+          <widget class="QLabel" name="lblHumidIcon">
+           <property name="text">
+            <string>💧</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblHumidity">
+           <property name="text">
+            <string>--.-</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <!-- 报警限值区域（右侧） -->
+      <layout class="QVBoxLayout" name="alarmLayout">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lblTempUnit">
+         <property name="text">
+          <string>°C</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblTempHigh">
+         <property name="text">
+          <string>上限: --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblTempLow">
+         <property name="text">
+          <string>下限: --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblHumidUnit">
+         <property name="text">
+          <string>%RH</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblHumidHigh">
+         <property name="text">
+          <string>上限: --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblHumidLow">
+         <property name="text">
+          <string>下限: --</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <!-- 离线提示或最后在线时间 -->
+    <widget class="QLabel" name="lblLastOnline">
+     <property name="text">
+      <string>最后在线: --</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignHCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
