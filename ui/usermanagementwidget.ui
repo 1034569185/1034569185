@@ -6,34 +6,39 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>650</height>
+    <width>980</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>用户管理</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
    <property name="leftMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="topMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="rightMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <property name="bottomMargin">
-    <number>10</number>
+    <number>8</number>
    </property>
    <item>
-    <!-- 左侧用户列表 -->
     <widget class="QGroupBox" name="grpUserList">
      <property name="title">
-      <string>用户列表</string>
+      <string>用户</string>
      </property>
-     <property name="maximumWidth">
-      <number>250</number>
+     <property name="maximumSize">
+      <size>
+       <width>280</width>
+       <height>16777215</height>
+      </size>
      </property>
      <layout class="QVBoxLayout" name="userListLayout">
       <item>
@@ -41,14 +46,21 @@
         <item>
          <widget class="QPushButton" name="btnAddUser">
           <property name="text">
-           <string>新增用户</string>
+           <string>新增</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnEditUser">
+          <property name="text">
+           <string>修改</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnDeleteUser">
           <property name="text">
-           <string>删除用户</string>
+           <string>删除</string>
           </property>
          </widget>
         </item>
@@ -61,17 +73,16 @@
     </widget>
    </item>
    <item>
-    <!-- 右侧用户详情 -->
     <widget class="QGroupBox" name="grpUserDetail">
      <property name="title">
-      <string>用户信息</string>
+      <string>用户设置</string>
      </property>
      <layout class="QVBoxLayout" name="detailVLayout">
       <item>
        <widget class="QTabWidget" name="tabUserSettings">
         <widget class="QWidget" name="tabBasicInfo">
          <attribute name="title">
-          <string>基本信息</string>
+          <string>基本设置</string>
          </attribute>
          <layout class="QFormLayout" name="basicFormLayout">
           <property name="leftMargin">
@@ -185,15 +196,15 @@
          <attribute name="title">
           <string>权限管理</string>
          </attribute>
-         <layout class="QVBoxLayout" name="permLayout">
-          <item>
+         <layout class="QGridLayout" name="permGridLayout">
+          <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="lblPermHint">
             <property name="text">
              <string>勾选该用户拥有的功能权限:</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
            <widget class="QCheckBox" name="chkDataQuery">
             <property name="text">
              <string>数据查询</string>
@@ -203,7 +214,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="1">
            <widget class="QCheckBox" name="chkAlarmQuery">
             <property name="text">
              <string>系统报警查询</string>
@@ -213,35 +224,35 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="2" column="0">
            <widget class="QCheckBox" name="chkFloorPlan">
             <property name="text">
              <string>设置平面图</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="2" column="1">
            <widget class="QCheckBox" name="chkDeviceMgmt">
             <property name="text">
              <string>设备管理</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="3" column="0">
            <widget class="QCheckBox" name="chkUserMgmt">
             <property name="text">
              <string>用户管理</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="3" column="1">
            <widget class="QCheckBox" name="chkParamConfig">
             <property name="text">
              <string>参数配置</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="4" column="0">
            <widget class="QCheckBox" name="chkLogQuery">
             <property name="text">
              <string>日志查询</string>
@@ -251,7 +262,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="4" column="1">
            <widget class="QCheckBox" name="chkExportPDF">
             <property name="text">
              <string>导出PDF</string>
@@ -261,7 +272,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="5" column="0" colspan="2">
            <spacer name="permSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -326,7 +337,7 @@
         <item>
          <widget class="QPushButton" name="btnSave">
           <property name="text">
-           <string>保 存</string>
+           <string>保存</string>
           </property>
           <property name="minimumWidth">
            <number>100</number>

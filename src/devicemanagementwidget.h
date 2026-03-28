@@ -7,6 +7,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class DeviceManagementWidget; }
 QT_END_NAMESPACE
 
+class QTreeWidgetItem;
+
 class DeviceManagementWidget : public QWidget
 {
     Q_OBJECT
@@ -18,7 +20,8 @@ signals:
     void devicesChanged();
 
 private slots:
-    void onDeviceSelected(int row, int col);
+    void onAreaTreeItemClicked(QTreeWidgetItem *item, int column);
+    void onDeviceListRowChanged(int row);
     void onAddDeviceClicked();
     void onDeleteDeviceClicked();
     void onSaveClicked();
@@ -27,10 +30,15 @@ private slots:
 
 private:
     void loadDevices();
+    void loadAreaDeviceList();
     void showDeviceDetail(const DeviceInfo &device);
     DeviceInfo currentDeviceFromUI();
+    DeviceInfo findDeviceById(int deviceId) const;
+    void setupVariableTable();
 
     Ui::DeviceManagementWidget *ui;
     DbManager *m_db;
     int m_selectedDeviceId;
+    QString m_selectedArea;
+    QList<DeviceInfo> m_cachedDevices;
 };
