@@ -43,20 +43,12 @@
           <property name="text">
            <string>添加</string>
           </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #27ae60; color: white; padding: 5px 10px; border: none; border-radius: 3px; }
-QPushButton:hover { background-color: #229954; }</string>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnDeleteDevice">
           <property name="text">
            <string>删除</string>
-          </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #e74c3c; color: white; padding: 5px 10px; border: none; border-radius: 3px; }
-QPushButton:hover { background-color: #c0392b; }</string>
           </property>
          </widget>
         </item>
@@ -305,20 +297,12 @@ QPushButton:hover { background-color: #c0392b; }</string>
             <property name="text">
              <string>写配置到仪表</string>
             </property>
-            <property name="styleSheet">
-             <string>QPushButton { background-color: #e67e22; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #d35400; }</string>
-            </property>
            </widget>
           </item>
           <item row="5" column="1">
            <widget class="QPushButton" name="btnReadConfig">
             <property name="text">
              <string>从仪表读配置</string>
-            </property>
-            <property name="styleSheet">
-             <string>QPushButton { background-color: #8e44ad; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #7d3c98; }</string>
             </property>
            </widget>
           </item>
@@ -342,10 +326,6 @@ QPushButton:hover { background-color: #7d3c98; }</string>
           </property>
           <property name="minimumWidth">
            <number>100</number>
-          </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #3498db; color: white; padding: 6px 20px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #2980b9; }</string>
           </property>
          </widget>
         </item>

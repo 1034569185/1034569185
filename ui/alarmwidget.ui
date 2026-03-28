@@ -78,20 +78,12 @@
         <property name="text">
          <string>查 询</string>
         </property>
-        <property name="styleSheet">
-         <string>QPushButton { background-color: #3498db; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #2980b9; }</string>
-        </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="btnExportPDF">
         <property name="text">
          <string>PDF导出</string>
-        </property>
-        <property name="styleSheet">
-         <string>QPushButton { background-color: #e74c3c; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #c0392b; }</string>
         </property>
        </widget>
       </item>

@@ -88,10 +88,14 @@ void DataQueryWidget::onQueryClicked()
     // Apply filter if enabled
     if (ui->chkFilter->isChecked() && !ui->txtFilter->text().isEmpty()) {
         QRegularExpression rx(ui->txtFilter->text());
-        data.erase(std::remove_if(data.begin(), data.end(),
-            [&rx](const SensorData &sd) {
-                return !rx.match(sd.deviceName).hasMatch();
-            }), data.end());
+        QList<SensorData> filtered;
+        filtered.reserve(data.size());
+        for (const SensorData &sd : data) {
+            if (rx.match(sd.deviceName).hasMatch()) {
+                filtered.append(sd);
+            }
+        }
+        data = std::move(filtered);
     }
 
     populateTable(data);

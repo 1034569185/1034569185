@@ -40,10 +40,6 @@
           <property name="text">
            <string>新增站点</string>
           </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #27ae60; color: white; padding: 5px 15px; border: none; border-radius: 3px; }
-QPushButton:hover { background-color: #229954; }</string>
-          </property>
          </widget>
         </item>
         <item>
@@ -51,20 +47,12 @@ QPushButton:hover { background-color: #229954; }</string>
           <property name="text">
            <string>删除站点</string>
           </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #e74c3c; color: white; padding: 5px 15px; border: none; border-radius: 3px; }
-QPushButton:hover { background-color: #c0392b; }</string>
-          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnConnectSite">
           <property name="text">
            <string>连接此站点</string>
-          </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #3498db; color: white; padding: 5px 15px; border: none; border-radius: 3px; }
-QPushButton:hover { background-color: #2980b9; }</string>
           </property>
          </widget>
         </item>
@@ -204,10 +192,6 @@ QPushButton:hover { background-color: #2980b9; }</string>
          <widget class="QPushButton" name="btnSaveSite">
           <property name="text">
            <string>保存站点</string>
-          </property>
-          <property name="styleSheet">
-           <string>QPushButton { background-color: #3498db; color: white; padding: 6px 15px; border: none; border-radius: 4px; }
-QPushButton:hover { background-color: #2980b9; }</string>
           </property>
          </widget>
         </item>

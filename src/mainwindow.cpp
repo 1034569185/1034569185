@@ -22,6 +22,10 @@
 #include <QDateTime>
 #include <QDebug>
 
+namespace {
+const char *kAlarmStatusLabelStyle = "QLabel { color: #e74c3c; font-size: 12px; }";
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -249,7 +253,7 @@ void MainWindow::onSensorDataReceived(const SensorReading &reading)
                         }
                         m_db->insertAlarmRecord(alarm);
                         ui->lblAlarmStatus->setText(tr("最新报警: %1 %2").arg(dev.name).arg(alarm.alarmType));
-                        ui->lblAlarmStatus->setStyleSheet("QLabel { color: #e74c3c; font-size: 12px; }");
+                        ui->lblAlarmStatus->setStyleSheet(kAlarmStatusLabelStyle);
                     }
                 }
             }
