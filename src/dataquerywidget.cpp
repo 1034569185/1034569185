@@ -14,7 +14,10 @@
 #include <QVBoxLayout>
 #include <QDir>
 
+#include <QtGlobal>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_CHARTS_USE_NAMESPACE
+#endif
 
 DataQueryWidget::DataQueryWidget(DbManager *db, QWidget *parent)
     : QWidget(parent)

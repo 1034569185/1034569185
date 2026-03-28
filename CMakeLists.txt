@@ -61,10 +61,15 @@ set(UI_FILES
     ui/sensorwidget.ui
 )
 
+set(RESOURCE_FILES
+    resources/skin.qrc
+)
+
 add_executable(${PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
     ${UI_FILES}
+    ${RESOURCE_FILES}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QDir>
 #include <QStandardPaths>
+#include <QFile>
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +31,13 @@ int main(int argc, char *argv[])
             app.installTranslator(&translator);
             break;
         }
+    }
+
+    // Load QSS skin from QSS-Skin-Builder package
+    QFile skinFile(":/skin/blue.css");
+    if (skinFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        app.setStyleSheet(QString::fromUtf8(skinFile.readAll()));
+        skinFile.close();
     }
 
     MainWindow w;

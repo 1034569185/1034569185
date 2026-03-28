@@ -18,12 +18,12 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>220</width>
-    <height>180</height>
+    <width>250</width>
+    <height>185</height>
    </size>
   </property>
   <property name="styleSheet">
-   <string>QWidget#SensorWidget { background-color: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 6px; }</string>
+   <string/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -43,7 +43,7 @@
    </property>
    <item>
     <!-- 记录仪名称 -->
-    <widget class="QLabel" name="lblSensorName">
+     <widget class="QLabel" name="lblSensorName">
      <property name="text">
       <string>记录仪名称</string>
      </property>
@@ -51,7 +51,7 @@
       <set>Qt::AlignHCenter</set>
      </property>
      <property name="styleSheet">
-      <string>QLabel { font-size: 13px; font-weight: bold; color: #2c3e50; background-color: #d5d8dc; padding: 2px; border-radius: 3px; }</string>
+      <string>QLabel { font-size: 13px; font-weight: bold; }</string>
      </property>
     </widget>
    </item>
@@ -68,7 +68,7 @@
             <string>🌡</string>
            </property>
            <property name="styleSheet">
-            <string>QLabel { font-size: 16px; }</string>
+            <string>QLabel { font-size: 15px; }</string>
            </property>
           </widget>
          </item>
@@ -78,7 +78,7 @@
             <string>--.-</string>
            </property>
            <property name="styleSheet">
-            <string>QLabel { font-size: 22px; font-weight: bold; color: #e74c3c; }</string>
+            <string>QLabel { font-size: 23px; font-weight: bold; }</string>
            </property>
           </widget>
          </item>
@@ -92,7 +92,7 @@
             <string>💧</string>
            </property>
            <property name="styleSheet">
-            <string>QLabel { font-size: 16px; }</string>
+            <string>QLabel { font-size: 15px; }</string>
            </property>
           </widget>
          </item>
@@ -102,7 +102,7 @@
             <string>--.-</string>
            </property>
            <property name="styleSheet">
-            <string>QLabel { font-size: 22px; font-weight: bold; color: #3498db; }</string>
+            <string>QLabel { font-size: 23px; font-weight: bold; }</string>
            </property>
           </widget>
          </item>
@@ -113,13 +113,16 @@
      <item>
       <!-- 报警限值区域（右侧） -->
       <layout class="QVBoxLayout" name="alarmLayout">
+       <property name="spacing">
+        <number>1</number>
+       </property>
        <item>
         <widget class="QLabel" name="lblTempUnit">
          <property name="text">
           <string>°C</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #7f8c8d; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -129,7 +132,7 @@
           <string>上限: --</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #e74c3c; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -139,7 +142,7 @@
           <string>下限: --</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #3498db; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -149,7 +152,7 @@
           <string>%RH</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #7f8c8d; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -159,7 +162,7 @@
           <string>上限: --</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #e74c3c; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -169,7 +172,7 @@
           <string>下限: --</string>
          </property>
          <property name="styleSheet">
-          <string>QLabel { font-size: 11px; color: #3498db; }</string>
+          <string>QLabel { font-size: 10px; }</string>
          </property>
         </widget>
        </item>
@@ -187,7 +190,7 @@
       <set>Qt::AlignHCenter</set>
      </property>
      <property name="styleSheet">
-      <string>QLabel { font-size: 11px; color: #95a5a6; }</string>
+      <string>QLabel { font-size: 11px; }</string>
      </property>
     </widget>
    </item>

@@ -35,28 +35,28 @@ void SensorWidget::updateReading(double temperature, double humidity,
 
     // Set alarm colors
     QString tempStyle = tempAlarm
-        ? "QLabel { font-size: 22px; font-weight: bold; color: #e74c3c; }"
-        : "QLabel { font-size: 22px; font-weight: bold; color: #27ae60; }";
+        ? "QLabel { font-size: 23px; font-weight: bold; color: #e74c3c; }"
+        : "QLabel { font-size: 23px; font-weight: bold; color: #2b7fba; }";
     QString humidStyle = humidAlarm
-        ? "QLabel { font-size: 22px; font-weight: bold; color: #e74c3c; }"
-        : "QLabel { font-size: 22px; font-weight: bold; color: #3498db; }";
+        ? "QLabel { font-size: 23px; font-weight: bold; color: #e74c3c; }"
+        : "QLabel { font-size: 23px; font-weight: bold; color: #2b7fba; }";
 
     // For below-limit alarms, use blue for temperature too
     if (tempAlarm && temperature < m_device.tempLow) {
-        tempStyle = "QLabel { font-size: 22px; font-weight: bold; color: #3498db; }";
+        tempStyle = "QLabel { font-size: 23px; font-weight: bold; color: #3498db; }";
     }
     if (humidAlarm && humidity < m_device.humidLow) {
-        humidStyle = "QLabel { font-size: 22px; font-weight: bold; color: #3498db; }";
+        humidStyle = "QLabel { font-size: 23px; font-weight: bold; color: #3498db; }";
     }
 
     ui->lblTemperature->setStyleSheet(tempStyle);
     ui->lblHumidity->setStyleSheet(humidStyle);
 
-    // Background highlight when alarm
+    // Background highlight when alarm (keep consistent with global QSS)
     if (tempAlarm || humidAlarm) {
-        setStyleSheet("QWidget#SensorWidget { background-color: #fdecea; border: 2px solid #e74c3c; border-radius: 6px; }");
+        setStyleSheet("QWidget#SensorWidget { border: 2px solid #e74c3c; border-radius: 6px; background-color: #eef6ff; }");
     } else {
-        setStyleSheet("QWidget#SensorWidget { background-color: #eafaf1; border: 1px solid #bdc3c7; border-radius: 6px; }");
+        setStyleSheet("QWidget#SensorWidget { border: 1px solid #7F9AB8; border-radius: 6px; background-color: #CFDDEE; }");
     }
 }
 
@@ -65,7 +65,7 @@ void SensorWidget::setOffline()
     ui->lblTemperature->setText("--.-");
     ui->lblHumidity->setText("--.-");
     ui->lblLastOnline->setText(tr("设备不在线"));
-    ui->lblTemperature->setStyleSheet("QLabel { font-size: 22px; font-weight: bold; color: #95a5a6; }");
-    ui->lblHumidity->setStyleSheet("QLabel { font-size: 22px; font-weight: bold; color: #95a5a6; }");
-    setStyleSheet("QWidget#SensorWidget { background-color: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 6px; }");
+    ui->lblTemperature->setStyleSheet("QLabel { font-size: 23px; font-weight: bold; color: #7f8c8d; }");
+    ui->lblHumidity->setStyleSheet("QLabel { font-size: 23px; font-weight: bold; color: #7f8c8d; }");
+    setStyleSheet("QWidget#SensorWidget { border: 1px solid #7F9AB8; border-radius: 6px; background-color: #D7E4F3; }");
 }

@@ -36,6 +36,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Clear most inline UI styles so external QSS skin can take effect globally
+    const QList<QWidget *> skinTargets = {
+        ui->topBarWidget, ui->btnDataQuery, ui->btnAlarm, ui->btnFloorPlan,
+        ui->btnSettings, ui->btnSwitchSite, ui->btnLogQuery, ui->btnHelp,
+        ui->btnLogout, ui->btnLogin, ui->areaTabBar, ui->sensorScrollArea,
+        ui->statusBarWidget, ui->lblCompanyInfo, ui->lblAlarmStatus, ui->lblDateTime,
+        ui->lblCurrentUser, ui->titleLabel
+    };
+    for (QWidget *wgt : skinTargets) {
+        if (wgt) {
+            wgt->setStyleSheet(QString());
+        }
+    }
+
     // Open database
     if (!m_db->open()) {
         QMessageBox::critical(this, tr("数据库错误"),
@@ -181,7 +195,7 @@ void MainWindow::onAreaTabChanged(int index)
     QString areaName = m_areas.at(index);
     QList<int> deviceIds = m_areaDeviceMap.value(areaName);
 
-    int cols = 5;
+    int cols = qMax(4, ui->sensorScrollArea->viewport()->width() / 240);
     int row = 0, col = 0;
     for (int devId : deviceIds) {
         SensorWidget *w = m_sensorWidgets.value(devId);
