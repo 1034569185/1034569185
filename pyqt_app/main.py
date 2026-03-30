@@ -1,6 +1,8 @@
 import argparse
+import os
 import sys
 from dataclasses import dataclass
+from typing import List
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QFont
@@ -40,6 +42,9 @@ SAMPLE_DATA = [
     SensorSample("冷链区", "C区", 5.7, 67.9),
 ]
 
+DEMO_USERNAME = os.getenv("PYQT_DEMO_USERNAME", "")
+DEMO_PASSWORD = os.getenv("PYQT_DEMO_PASSWORD", "")
+
 
 class LoginDialog(QDialog):
     def __init__(self, parent=None):
@@ -58,13 +63,11 @@ class LoginDialog(QDialog):
 
         self.username_edit = QLineEdit()
         self.username_edit.setPlaceholderText("用户名")
-        self.username_edit.setText("admin")
         root.addWidget(self.username_edit)
 
         self.password_edit = QLineEdit()
         self.password_edit.setPlaceholderText("密码")
         self.password_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_edit.setText("admin123")
         root.addWidget(self.password_edit)
 
         button_row = QHBoxLayout()
@@ -75,10 +78,23 @@ class LoginDialog(QDialog):
         root.addLayout(button_row)
 
     def _try_login(self):
-        if self.username_edit.text().strip() == "admin" and self.password_edit.text() == "admin123":
+        username = self.username_edit.text().strip()
+        password = self.password_edit.text()
+        if not username or not password:
+            QMessageBox.warning(self, "登录失败", "请输入用户名和密码")
+            return
+
+        if DEMO_USERNAME or DEMO_PASSWORD:
+            if username == DEMO_USERNAME and password == DEMO_PASSWORD:
+                self.accept()
+                return
+            QMessageBox.warning(self, "登录失败", "账号或密码错误")
+            return
+
+        # 演示模式：未配置环境变量时，允许任意非空账号登录
+        if username and password:
             self.accept()
             return
-        QMessageBox.warning(self, "登录失败", "用户名或密码错误（演示版本仅支持 admin/admin123）")
 
 
 class SensorCard(QFrame):
@@ -141,6 +157,7 @@ class MainWindow(QMainWindow):
         side_layout.addWidget(title)
 
         self.stack = QStackedWidget()
+        self.nav_buttons: List[QPushButton] = []
 
         self.dashboard = self._build_dashboard_page()
         self.data_query = PlaceholderPage("数据查询", "保留原 Qt 版本的数据列表、统计、曲线和导出能力；此处为 PyQt 页面骨架。")
@@ -168,6 +185,7 @@ class MainWindow(QMainWindow):
                 btn.setChecked(True)
             btn.clicked.connect(lambda checked, idx=i: self._switch_page(idx))
             side_layout.addWidget(btn)
+            self.nav_buttons.append(btn)
 
         side_layout.addStretch(1)
 
@@ -194,11 +212,8 @@ class MainWindow(QMainWindow):
 
     def _switch_page(self, index: int):
         self.stack.setCurrentIndex(index)
-        for i in range(self.sidebar.layout().count()):
-            item = self.sidebar.layout().itemAt(i)
-            widget = item.widget()
-            if isinstance(widget, QPushButton) and widget.isCheckable():
-                widget.setChecked(i - 1 == index)
+        for i, button in enumerate(self.nav_buttons):
+            button.setChecked(i == index)
 
     def _build_dashboard_page(self) -> QWidget:
         page = QWidget()
@@ -337,7 +352,6 @@ def apply_theme(app: QApplication):
         QLabel#pageDesc {
             font-size: 14px;
             color: #556b8a;
-            line-height: 1.5;
         }
         """
     )
@@ -374,4 +388,4 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    raise SystemExit(run_app(args.screenshot))
+    sys.exit(run_app(args.screenshot))
