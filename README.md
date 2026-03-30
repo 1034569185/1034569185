@@ -149,6 +149,21 @@ make -j$(nproc)
 ./HongRuanTempHumidity
 ```
 
+## PyQt 版本（UI 优化演示）
+
+为便于对比 Qt C++ 版本界面，仓库新增了一个并行的 PyQt UI 演示版本（不影响原工程构建）：
+
+```bash
+cd pyqt_app
+python3 -m pip install -r requirements.txt
+python3 main.py
+```
+
+说明：
+- 默认演示登录：任意非空用户名/密码均可进入（仅用于本地 UI 演示）
+- 如需固定登录账号，可在运行前配置环境变量 `PYQT_DEMO_USERNAME`、`PYQT_DEMO_PASSWORD`
+- 该版本主要用于界面风格与布局优化演示，后续可逐步接入现有数据库与串口逻辑
+
 ## UI 文件编辑
 
 所有 `.ui` 文件位于 `ui/` 目录，可使用 **Qt Designer** 进行图形化编辑：
