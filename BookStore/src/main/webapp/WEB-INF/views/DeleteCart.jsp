@@ -22,5 +22,5 @@
         }
     }
 
-    response.sendRedirect(request.getContextPath() + "/Cart.jsp");
+    response.sendRedirect(request.getContextPath() + "/Cart");
 %>

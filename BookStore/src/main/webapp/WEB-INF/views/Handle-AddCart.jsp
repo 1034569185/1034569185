@@ -46,5 +46,5 @@
     session.setAttribute("cart", cart);
 
     // 4) 跳转到购物车页面
-    response.sendRedirect(request.getContextPath() + "/Cart.jsp");
+    response.sendRedirect(request.getContextPath() + "/Cart");
 %>

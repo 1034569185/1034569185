@@ -43,15 +43,15 @@
     <main class="cart-page">
         <h1 class="cart-title">我的购物车</h1>
         <div class="cart-actions">
-            <a class="text-link" href="${pageContext.request.contextPath}/ProductList.jsp">继续购物</a>
-            <a class="danger-link" href="${pageContext.request.contextPath}/DeleteCart.jsp?clear=true"
+            <a class="text-link" href="${pageContext.request.contextPath}/ProductList">继续购物</a>
+            <a class="danger-link" href="${pageContext.request.contextPath}/DeleteCart?clear=true"
                onclick="return confirm('确定清空购物车吗？');">清空购物车</a>
         </div>
 
         <%
             if (cart.isEmpty()) {
         %>
-        <div class="empty">购物车为空，快去 <a class="text-link" href="${pageContext.request.contextPath}/ProductList.jsp">商品目录</a> 选购吧。</div>
+        <div class="empty">购物车为空，快去 <a class="text-link" href="${pageContext.request.contextPath}/ProductList">商品目录</a> 选购吧。</div>
         <%
             } else {
                 double total = 0.0;
@@ -88,7 +88,7 @@
                 <td><%= quantity %></td>
                 <td class="price">￥<%= String.format("%.2f", subTotal) %></td>
                 <td>
-                    <a class="danger-link" href="${pageContext.request.contextPath}/DeleteCart.jsp?id=<%= id %>"
+                    <a class="danger-link" href="${pageContext.request.contextPath}/DeleteCart?id=<%= id %>"
                        onclick="return confirm('确定删除该商品吗？');">删除</a>
                 </td>
             </tr>

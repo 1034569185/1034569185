@@ -30,7 +30,9 @@ public class SecurityConfig {
                         "/user/checkUsername", "/user/checkEmail",
                         "/admin/**",
                         "/ProductList.jsp", "/Cart.jsp",
-                        "/Handle-AddCart.jsp", "/DeleteCart.jsp"
+                        "/Handle-AddCart.jsp", "/DeleteCart.jsp",
+                        "/ProductList", "/Cart",
+                        "/Handle-AddCart", "/DeleteCart"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

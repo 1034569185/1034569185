@@ -43,7 +43,7 @@
                 <td>张三</td>
                 <td class="book-price">￥59.00</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart.jsp" method="post">
+                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
                         <input type="hidden" name="id" value="book-001">
                         <input type="hidden" name="name" value="Java Web 开发实战">
                         <input type="hidden" name="author" value="张三">
@@ -59,7 +59,7 @@
                 <td>李四</td>
                 <td class="book-price">￥66.00</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart.jsp" method="post">
+                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
                         <input type="hidden" name="id" value="book-002">
                         <input type="hidden" name="name" value="Spring Boot 企业应用">
                         <input type="hidden" name="author" value="李四">
@@ -75,7 +75,7 @@
                 <td>王五</td>
                 <td class="book-price">￥72.00</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart.jsp" method="post">
+                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
                         <input type="hidden" name="id" value="book-003">
                         <input type="hidden" name="name" value="数据库系统原理">
                         <input type="hidden" name="author" value="王五">
@@ -91,7 +91,7 @@
                 <td>赵六</td>
                 <td class="book-price">￥68.00</td>
                 <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart.jsp" method="post">
+                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
                         <input type="hidden" name="id" value="book-004">
                         <input type="hidden" name="name" value="数据结构与算法">
                         <input type="hidden" name="author" value="赵六">
