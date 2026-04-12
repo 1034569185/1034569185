@@ -29,7 +29,7 @@ public class HomeController {
     /**
      * 商品目录页（实验七）
      */
-    @GetMapping({"/ProductList.jsp", "/ProductList"})
+    @GetMapping({"/ProductList", "/ProductList.*"})
     public String productList() {
         return "ProductList";
     }
@@ -37,7 +37,7 @@ public class HomeController {
     /**
      * 购物车展示页（实验七）
      */
-    @GetMapping({"/Cart.jsp", "/Cart"})
+    @GetMapping({"/Cart", "/Cart.*"})
     public String cart() {
         return "Cart";
     }
@@ -45,7 +45,7 @@ public class HomeController {
     /**
      * 购物车添加处理页（实验七）
      */
-    @RequestMapping({"/Handle-AddCart.jsp", "/Handle-AddCart"})
+    @RequestMapping({"/Handle-AddCart", "/Handle-AddCart.*"})
     public String handleAddCart() {
         return "Handle-AddCart";
     }
@@ -53,7 +53,7 @@ public class HomeController {
     /**
      * 购物车删除处理页（实验七）
      */
-    @RequestMapping({"/DeleteCart.jsp", "/DeleteCart"})
+    @RequestMapping({"/DeleteCart", "/DeleteCart.*"})
     public String deleteCart() {
         return "DeleteCart";
     }
