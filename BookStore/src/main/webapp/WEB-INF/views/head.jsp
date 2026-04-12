@@ -26,7 +26,7 @@
                     <a href="${pageContext.request.contextPath}/user/register" class="header-btn header-btn-primary">注册</a>
                 </c:otherwise>
             </c:choose>
-            <a href="${pageContext.request.contextPath}/cart" class="header-cart" title="购物车">
+            <a href="${pageContext.request.contextPath}/Cart.jsp" class="header-cart" title="购物车">
                 🛒 <span class="cart-count">0</span>
             </a>
         </div>

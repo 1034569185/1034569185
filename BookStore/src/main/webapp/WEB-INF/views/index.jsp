@@ -134,7 +134,7 @@
                              alt="登录"
                              onerror="this.outerHTML='🔑 登录'">
                     </a>
-                    <a href="${pageContext.request.contextPath}/cart" class="quick-link">
+                    <a href="${pageContext.request.contextPath}/Cart.jsp" class="quick-link">
                         <img src="${pageContext.request.contextPath}/static/images/cart.gif"
                              alt="购物车"
                              onerror="this.outerHTML='🛒 购物车'">

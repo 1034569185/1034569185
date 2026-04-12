@@ -28,7 +28,9 @@ public class SecurityConfig {
                         "/static/**", "/css/**", "/js/**", "/images/**",
                         "/h2-console/**",
                         "/user/checkUsername", "/user/checkEmail",
-                        "/admin/**"
+                        "/admin/**",
+                        "/ProductList.jsp", "/Cart.jsp",
+                        "/Handle-AddCart.jsp", "/DeleteCart.jsp"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

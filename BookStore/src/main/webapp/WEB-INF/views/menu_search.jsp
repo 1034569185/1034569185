@@ -25,6 +25,7 @@
     <!-- 分类导航 -->
     <nav class="category-nav">
         <a href="${pageContext.request.contextPath}/" class="cat-link">首页</a>
+        <a href="${pageContext.request.contextPath}/ProductList.jsp" class="cat-link">全部商品目录</a>
         <a href="${pageContext.request.contextPath}/book/list?category=computer" class="cat-link">计算机</a>
         <a href="${pageContext.request.contextPath}/book/list?category=literature" class="cat-link">文学小说</a>
         <a href="${pageContext.request.contextPath}/book/list?category=history" class="cat-link">历史人文</a>
