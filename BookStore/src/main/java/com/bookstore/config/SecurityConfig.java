@@ -32,7 +32,14 @@ public class SecurityConfig {
                         "/ProductList.jsp", "/Cart.jsp",
                         "/Handle-AddCart.jsp", "/DeleteCart.jsp",
                         "/ProductList", "/Cart",
-                        "/Handle-AddCart", "/DeleteCart"
+                        "/Handle-AddCart", "/DeleteCart",
+                        "/login", "/login.jsp", "/user/login",
+                        "/Handle-register", "/Handle-register.jsp",
+                        "/Handle-login", "/Handle-login.jsp",
+                        "/registersuccess", "/registersuccess.jsp",
+                        "/loginsuccess", "/loginsuccess.jsp",
+                        "/loginfail", "/loginfail.jsp",
+                        "/user/logout"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

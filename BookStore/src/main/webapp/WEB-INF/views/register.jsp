@@ -42,7 +42,7 @@
                     </div>
                 </c:if>
 
-                <form id="registerForm" action="${pageContext.request.contextPath}/user/register"
+                <form id="registerForm" action="${pageContext.request.contextPath}/Handle-register"
                       method="post" novalidate>
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
@@ -227,7 +227,7 @@
                     <button type="submit" class="btn-register" id="submitBtn">立即注册</button>
 
                     <div class="login-link">
-                        已有账号？<a href="#" class="link">立即登录</a>
+                        已有账号？<a href="${pageContext.request.contextPath}/user/login" class="link">立即登录</a>
                     </div>
                 </form>
             </div>
