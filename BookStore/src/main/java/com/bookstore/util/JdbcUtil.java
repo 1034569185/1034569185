@@ -12,7 +12,7 @@ public final class JdbcUtil {
     private static final String DEFAULT_URL =
             "jdbc:mysql://localhost:3306/bookstore?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true";
     private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASSWORD = "root";
+    private static final String DEFAULT_PASSWORD = "123456";
 
     private JdbcUtil() {
     }
