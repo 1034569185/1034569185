@@ -98,7 +98,7 @@ public class UserController {
             model.addAttribute("success", "注册成功！欢迎加入 BookStore，" + user.getUsername() + "！");
             return "register";
         } catch (Exception e) {
-            logger.error("Registration failed", e);
+            logger.error("UserController.register failed: username={}, email={}", form.getUsername(), form.getEmail(), e);
             model.addAttribute("error", "注册失败，请稍后重试。");
             model.addAttribute("form", form);
             return "register";

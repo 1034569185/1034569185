@@ -4,6 +4,7 @@
 <%@ page import="java.sql.Connection" %>
 <%@ page import="java.sql.PreparedStatement" %>
 <%@ page import="java.sql.ResultSet" %>
+<%@ page import="java.time.LocalDateTime" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     request.setCharacterEncoding("UTF-8");
@@ -47,14 +48,13 @@
         }
 
         insertStmt = conn.prepareStatement(
-                "INSERT INTO `user` (username, password, email, phone, gender, birthday, role) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                "INSERT INTO `user` (username, password, email, telephone, gender, role) VALUES (?, ?, ?, ?, ?, ?)");
         insertStmt.setString(1, username.trim());
         insertStmt.setString(2, password);
         insertStmt.setString(3, email.trim());
         insertStmt.setString(4, phone == null || phone.trim().isEmpty() ? null : phone.trim());
         insertStmt.setString(5, gender == null || gender.trim().isEmpty() ? null : gender.trim());
-        insertStmt.setString(6, birthday == null || birthday.trim().isEmpty() ? null : birthday.trim());
-        insertStmt.setString(7, "普通用户");
+        insertStmt.setString(6, "普通用户");
 
         int rows = insertStmt.executeUpdate();
         if (rows > 0) {
@@ -65,6 +65,9 @@
                     + URLEncoder.encode("注册失败：写入数据库失败", StandardCharsets.UTF_8.name()));
         }
     } catch (Exception e) {
+        System.err.println("[Handle-register.jsp] Registration DB error at " + LocalDateTime.now()
+                + ", username=" + username + ", email=" + email + ", message=" + e.getMessage());
+        e.printStackTrace();
         response.sendRedirect(request.getContextPath() + "/loginfail?message="
                 + URLEncoder.encode("注册失败：" + e.getMessage(), StandardCharsets.UTF_8.name()));
     } finally {

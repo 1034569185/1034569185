@@ -32,7 +32,7 @@ public class User {
     private String email;
 
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
-    @Column(name = "phone", length = 11)
+    @Column(name = "telephone", length = 255)
     private String phone;
 
     @Column(name = "gender", length = 10)
