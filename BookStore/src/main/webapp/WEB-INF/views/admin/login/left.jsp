@@ -8,12 +8,12 @@
             <div class="admin-nav-title">🧪 实验十一</div>
             <ul class="admin-nav-list">
                 <li>
-                    <a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_list" target="_self" class="admin-nav-link">
+                    <a href="${pageContext.request.contextPath}/admin/login/home?item=product_list" target="_self" class="admin-nav-link">
                         商品管理
                     </a>
                 </li>
                 <li>
-                    <a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_add" target="_self" class="admin-nav-link">
+                    <a href="${pageContext.request.contextPath}/admin/login/home?item=product_add" target="_self" class="admin-nav-link">
                         添加商品
                     </a>
                 </li>

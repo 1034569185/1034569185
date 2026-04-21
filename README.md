@@ -82,9 +82,9 @@ H2 数据库控制台：[http://localhost:8080/h2-console](http://localhost:8080
 | 页面 | 访问地址 |
 |------|----------|
 | 后台欢迎页 | `http://localhost:8080/admin/welcome` |
-| 商品管理容器页（实验十一） | `http://localhost:8080/admin/login/home.jsp` |
-| 商品列表页（实验十一） | `http://localhost:8080/admin/login/home.jsp?item=product_list` |
-| 添加商品页（实验十一） | `http://localhost:8080/admin/login/home.jsp?item=product_add` |
+| 商品管理容器页（实验十一） | `http://localhost:8080/admin/login/home` |
+| 商品列表页（实验十一） | `http://localhost:8080/admin/login/home?item=product_list` |
+| 添加商品页（实验十一） | `http://localhost:8080/admin/login/home?item=product_add` |
 
 ### 3) 表单处理与接口地址（调试时使用）
 
@@ -104,8 +104,8 @@ H2 数据库控制台：[http://localhost:8080/h2-console](http://localhost:8080
 1. 打开 `http://localhost:8080/` 查看首页  
 2. 访问 `http://localhost:8080/user/register` 注册账号  
 3. 访问 `http://localhost:8080/user/login` 登录  
-4. 访问 `http://localhost:8080/admin/login/home.jsp?item=product_list` 进入商品管理  
-5. 访问 `http://localhost:8080/admin/login/home.jsp?item=product_add` 添加商品  
+4. 访问 `http://localhost:8080/admin/login/home?item=product_list` 进入商品管理  
+5. 访问 `http://localhost:8080/admin/login/home?item=product_add` 添加商品  
 
 ## 后续扩展建议
 

@@ -10,7 +10,7 @@
 %>
 
 <div class="admin-breadcrumb">
-    <a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_list">商品管理</a>
+    <a href="${pageContext.request.contextPath}/admin/login/home?item=product_list">商品管理</a>
     <span> &gt; </span>
     <span>商品列表</span>
 </div>
@@ -18,7 +18,7 @@
 <div class="quick-actions" style="margin-top:12px;">
     <h3 class="qa-title">商品列表</h3>
     <div style="margin-bottom: 12px;">
-        <a class="qa-btn" href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_add">➕ 添加商品</a>
+        <a class="qa-btn" href="${pageContext.request.contextPath}/admin/login/home?item=product_add">➕ 添加商品</a>
     </div>
 
     <table border="1" cellspacing="0" cellpadding="8" width="100%" style="background:#fff;border-collapse:collapse;">

@@ -8,5 +8,5 @@
     if (!ok) {
         System.err.println("[admin/products/add-handle.jsp] add product failed, name=" + product.getName());
     }
-    response.sendRedirect(request.getContextPath() + "/admin/login/home.jsp?item=product_list");
+    response.sendRedirect(request.getContextPath() + "/admin/login/home?item=product_list");
 %>

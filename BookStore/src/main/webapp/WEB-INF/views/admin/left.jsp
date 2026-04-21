@@ -25,7 +25,7 @@
                 <li><a href="${pageContext.request.contextPath}/admin/book/list"   class="admin-nav-link">图书列表</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/book/add"    class="admin-nav-link">添加图书</a></li>
                 <li><a href="${pageContext.request.contextPath}/admin/book/category" class="admin-nav-link">分类管理</a></li>
-                <li><a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_list" class="admin-nav-link">商品管理(实验11)</a></li>
+                <li><a href="${pageContext.request.contextPath}/admin/login/home?item=product_list" class="admin-nav-link">商品管理(实验11)</a></li>
             </ul>
         </div>
 

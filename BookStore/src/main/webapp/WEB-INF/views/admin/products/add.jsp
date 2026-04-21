@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="admin-breadcrumb">
-    <a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_list">商品管理</a>
+    <a href="${pageContext.request.contextPath}/admin/login/home?item=product_list">商品管理</a>
     <span> &gt; </span>
     <span>添加商品</span>
 </div>
@@ -34,7 +34,7 @@
         </p>
         <p>
             <button type="submit">确定</button>
-            <a href="${pageContext.request.contextPath}/admin/login/home.jsp?item=product_list">返回列表</a>
+            <a href="${pageContext.request.contextPath}/admin/login/home?item=product_list">返回列表</a>
         </p>
     </form>
 </div>

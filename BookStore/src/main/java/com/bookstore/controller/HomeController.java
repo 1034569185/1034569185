@@ -31,7 +31,7 @@ public class HomeController {
     /**
      * 实验十一：后台商品管理容器页
      */
-    @GetMapping({"/admin/login/home.jsp", "/admin/login/home"})
+    @GetMapping("/admin/login/home")
     public String adminProductHome() {
         return "admin/login/home";
     }
