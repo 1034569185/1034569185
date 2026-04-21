@@ -55,10 +55,57 @@ cd BookStore
 mvn spring-boot:run
 ```
 
-浏览器访问：[http://localhost:8080/user/register](http://localhost:8080/user/register)
+默认访问基地址：`http://localhost:8080`
 
 H2 数据库控制台：[http://localhost:8080/h2-console](http://localhost:8080/h2-console)  
 （JDBC URL: `jdbc:h2:mem:bookstoredb`，用户名: `sa`，密码: 空）
+
+## 页面访问指南（可直接复制到浏览器）
+
+> 说明：项目里很多 JSP 在 `WEB-INF` 下，不能直接按文件路径访问，需要通过下面这些 URL 进入。
+
+### 1) 前台页面
+
+| 页面 | 访问地址 |
+|------|----------|
+| 首页 | `http://localhost:8080/` |
+| 注册页 | `http://localhost:8080/user/register` |
+| 登录页 | `http://localhost:8080/user/login`（或 `/login`） |
+| 商品列表（实验七） | `http://localhost:8080/ProductList` |
+| 购物车（实验七） | `http://localhost:8080/Cart` |
+| 注册成功页 | `http://localhost:8080/registersuccess` |
+| 登录成功页 | `http://localhost:8080/loginsuccess` |
+| 登录失败页 | `http://localhost:8080/loginfail` |
+
+### 2) 后台页面（重点：可直接打开）
+
+| 页面 | 访问地址 |
+|------|----------|
+| 后台欢迎页 | `http://localhost:8080/admin/welcome` |
+| 商品管理容器页（实验十一） | `http://localhost:8080/admin/login/home.jsp` |
+| 商品列表页（实验十一） | `http://localhost:8080/admin/login/home.jsp?item=product_list` |
+| 添加商品页（实验十一） | `http://localhost:8080/admin/login/home.jsp?item=product_add` |
+
+### 3) 表单处理与接口地址（调试时使用）
+
+| 功能 | 地址 |
+|------|------|
+| 注册提交 | `POST http://localhost:8080/Handle-register` |
+| 登录提交 | `POST http://localhost:8080/Handle-login` |
+| 添加购物车 | `http://localhost:8080/Handle-AddCart` |
+| 删除购物车 | `http://localhost:8080/DeleteCart` |
+| 添加商品提交（实验十一） | `POST http://localhost:8080/admin/products/add-handle` |
+| 验证码图片 | `http://localhost:8080/captcha/image` |
+| 用户名可用性检查 | `http://localhost:8080/user/checkUsername?username=test` |
+| 邮箱可用性检查 | `http://localhost:8080/user/checkEmail?email=test@example.com` |
+
+## 建议的使用顺序（新用户）
+
+1. 打开 `http://localhost:8080/` 查看首页  
+2. 访问 `http://localhost:8080/user/register` 注册账号  
+3. 访问 `http://localhost:8080/user/login` 登录  
+4. 访问 `http://localhost:8080/admin/login/home.jsp?item=product_list` 进入商品管理  
+5. 访问 `http://localhost:8080/admin/login/home.jsp?item=product_add` 添加商品  
 
 ## 后续扩展建议
 
