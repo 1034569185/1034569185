@@ -8,6 +8,7 @@
 <div class="quick-actions" style="margin-top:12px;">
     <h3 class="qa-title">添加商品</h3>
     <form action="${pageContext.request.contextPath}/admin/products/add-handle" method="post" style="background:#fff;padding:16px;border-radius:6px;">
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
         <p>
             <label>商品名称：</label><br/>
             <input type="text" name="name" maxlength="40" required style="width: 360px;">
