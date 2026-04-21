@@ -29,6 +29,22 @@ public class HomeController {
     }
 
     /**
+     * 实验十一：后台商品管理容器页
+     */
+    @GetMapping({"/admin/login/home.jsp", "/admin/login/home"})
+    public String adminProductHome() {
+        return "admin/login/home";
+    }
+
+    /**
+     * 实验十一：添加商品处理页
+     */
+    @RequestMapping({"/admin/products/add-handle", "/admin/products/add-handle.jsp"})
+    public String adminProductAddHandle() {
+        return "admin/products/add-handle";
+    }
+
+    /**
      * 商品目录页（实验七）
      */
     @GetMapping({"/ProductList", "/ProductList.*"})
