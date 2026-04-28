@@ -104,6 +104,47 @@ public class Product {
     }
 
     /**
+     * 按名称/分类模糊查询商品
+     */
+    public List<Product> searchByKeyword(String keyword, String category) {
+        List<Product> ps = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT id, name, price, category, pnum, imgurl, description FROM products WHERE 1=1");
+        List<String> params = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND name LIKE ?");
+            params.add("%" + keyword.trim() + "%");
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            sql.append(" AND category = ?");
+            params.add(category.trim());
+        }
+        sql.append(" ORDER BY id DESC");
+        try (Connection conn = JdbcUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Product p = new Product();
+                    p.setId(rs.getInt("id"));
+                    p.setName(rs.getString("name"));
+                    p.setPrice(rs.getDouble("price"));
+                    p.setCategory(rs.getString("category"));
+                    p.setPnum(rs.getInt("pnum"));
+                    p.setImgurl(rs.getString("imgurl"));
+                    p.setDescription(rs.getString("description"));
+                    ps.add(p);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[domain.Product#searchByKeyword] query products failed: keyword=" + keyword + ", category=" + category + ", error=" + e.getMessage());
+            e.printStackTrace();
+        }
+        return ps;
+    }
+
+    /**
      * 添加商品
      */
     public boolean add(Product product) {

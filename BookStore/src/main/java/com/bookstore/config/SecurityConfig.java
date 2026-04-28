@@ -33,6 +33,7 @@ public class SecurityConfig {
                         "/Handle-AddCart.jsp", "/DeleteCart.jsp",
                         "/ProductList", "/Cart",
                         "/Handle-AddCart", "/DeleteCart",
+                        "/MenuSearchServlet",
                         "/login", "/login.jsp", "/user/login",
                         "/Handle-register", "/Handle-register.jsp",
                         "/Handle-login", "/Handle-login.jsp",

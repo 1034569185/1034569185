@@ -1,4 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="domain.Product" %>
+<%@ page import="java.util.*" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    if (request.getAttribute("products") == null) {
+        Product productBean = new Product();
+        List<Product> products = productBean.searchAll();
+        request.setAttribute("products", products);
+    }
+%>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -25,82 +35,53 @@
     <%@ include file="menu_search.jsp" %>
 
     <main class="product-page">
-        <h1 class="product-title">全部商品目录</h1>
+        <c:set var="keyword" value="${requestScope.keyword}" />
+        <c:set var="category" value="${requestScope.category}" />
+        <h1 class="product-title">
+            <c:choose>
+                <c:when test="${not empty keyword || not empty category}">搜索结果</c:when>
+                <c:otherwise>全部商品目录</c:otherwise>
+            </c:choose>
+        </h1>
         <table class="product-table">
             <thead>
             <tr>
                 <th>封面</th>
                 <th>书名</th>
-                <th>作者</th>
+                <th>分类</th>
                 <th>单价</th>
                 <th>购买</th>
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td><img src="${pageContext.request.contextPath}/static/images/productImg/0270eba2-2b48-48df-956b-0341204384d9.jpg" alt="书籍1"></td>
-                <td class="book-name">Java Web 开发实战</td>
-                <td>张三</td>
-                <td class="book-price">￥59.00</td>
-                <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
-                        <input type="hidden" name="id" value="book-001">
-                        <input type="hidden" name="name" value="Java Web 开发实战">
-                        <input type="hidden" name="author" value="张三">
-                        <input type="hidden" name="price" value="59.00">
-                        <input type="hidden" name="image" value="/static/images/productImg/0270eba2-2b48-48df-956b-0341204384d9.jpg">
-                        <button type="submit" class="buy-btn">加入购物车</button>
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td><img src="${pageContext.request.contextPath}/static/images/productImg/697a23d6-225a-41a3-8c20-7ab624265ecc.png" alt="书籍2"></td>
-                <td class="book-name">Spring Boot 企业应用</td>
-                <td>李四</td>
-                <td class="book-price">￥66.00</td>
-                <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
-                        <input type="hidden" name="id" value="book-002">
-                        <input type="hidden" name="name" value="Spring Boot 企业应用">
-                        <input type="hidden" name="author" value="李四">
-                        <input type="hidden" name="price" value="66.00">
-                        <input type="hidden" name="image" value="/static/images/productImg/697a23d6-225a-41a3-8c20-7ab624265ecc.png">
-                        <button type="submit" class="buy-btn">加入购物车</button>
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td><img src="${pageContext.request.contextPath}/static/images/productImg/a2da626c-c72d-4972-83de-cf48405c5563.jpg" alt="书籍3"></td>
-                <td class="book-name">数据库系统原理</td>
-                <td>王五</td>
-                <td class="book-price">￥72.00</td>
-                <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
-                        <input type="hidden" name="id" value="book-003">
-                        <input type="hidden" name="name" value="数据库系统原理">
-                        <input type="hidden" name="author" value="王五">
-                        <input type="hidden" name="price" value="72.00">
-                        <input type="hidden" name="image" value="/static/images/productImg/a2da626c-c72d-4972-83de-cf48405c5563.jpg">
-                        <button type="submit" class="buy-btn">加入购物车</button>
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <td><img src="${pageContext.request.contextPath}/static/images/productImg/c4ab442f-95c7-4d6f-a57e-3eb7dc6b83c4.jpg" alt="书籍4"></td>
-                <td class="book-name">数据结构与算法</td>
-                <td>赵六</td>
-                <td class="book-price">￥68.00</td>
-                <td>
-                    <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
-                        <input type="hidden" name="id" value="book-004">
-                        <input type="hidden" name="name" value="数据结构与算法">
-                        <input type="hidden" name="author" value="赵六">
-                        <input type="hidden" name="price" value="68.00">
-                        <input type="hidden" name="image" value="/static/images/productImg/c4ab442f-95c7-4d6f-a57e-3eb7dc6b83c4.jpg">
-                        <button type="submit" class="buy-btn">加入购物车</button>
-                    </form>
-                </td>
-            </tr>
+            <c:choose>
+                <c:when test="${empty products}">
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:24px;color:#64748b;">暂无匹配商品</td>
+                    </tr>
+                </c:when>
+                <c:otherwise>
+                    <c:forEach var="p" items="${products}">
+                        <c:set var="imgUrl" value="${empty p.imgurl ? '/static/images/logo.jpg' : p.imgurl}" />
+                        <tr>
+                            <td><img src="${pageContext.request.contextPath}${imgUrl}" alt="${p.name}"></td>
+                            <td class="book-name">${p.name}</td>
+                            <td>${p.category}</td>
+                            <td class="book-price">￥${p.price}</td>
+                            <td>
+                                <form action="${pageContext.request.contextPath}/Handle-AddCart" method="get">
+                                    <input type="hidden" name="id" value="${p.id}">
+                                    <input type="hidden" name="name" value="${p.name}">
+                                    <input type="hidden" name="author" value="${p.category}">
+                                    <input type="hidden" name="price" value="${p.price}">
+                                    <input type="hidden" name="image" value="${imgUrl}">
+                                    <button type="submit" class="buy-btn">加入购物车</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </c:otherwise>
+            </c:choose>
             </tbody>
         </table>
     </main>

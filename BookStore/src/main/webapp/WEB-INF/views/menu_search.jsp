@@ -2,7 +2,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="menu-search-bar">
     <!-- 搜索区域 -->
-    <form class="search-form" action="${pageContext.request.contextPath}/book/search" method="get">
+    <form class="search-form" action="${pageContext.request.contextPath}/MenuSearchServlet" method="get">
         <select name="category" class="search-category">
             <option value="">全部分类</option>
             <option value="computer">计算机</option>
