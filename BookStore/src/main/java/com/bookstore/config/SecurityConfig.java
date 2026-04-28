@@ -43,15 +43,7 @@ public class SecurityConfig {
                         "/user/logout"
                 )
                 .permitAll()
-                .anyRequest().authenticated()
-            .and()
-            .formLogin()
-                .loginPage("/user/login")
-                .defaultSuccessUrl("/")
-                .permitAll()
-            .and()
-            .logout()
-                .permitAll()
+                .anyRequest().permitAll()
             .and()
             .csrf()
                 // H2 console 需要关闭 CSRF
