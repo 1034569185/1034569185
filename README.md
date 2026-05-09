@@ -23,6 +23,10 @@ BookStore/
 │   │   └── UserService.java           # 业务逻辑层
 │   └── util/
 │       └── CaptchaUtil.java           # 验证码工具
+├── src/main/java/filter/
+│   └── EncodingFilter.java            # 全站统一编码过滤器（实验十一）
+├── src/main/java/listener/
+│   └── MyListener.java                # 在线人数监听器（实验十一）
 ├── src/main/resources/
 │   └── application.properties
 ├── src/main/webapp/
@@ -47,6 +51,8 @@ BookStore/
 | **AJAX 实时检查** | 失焦时异步检查用户名/邮箱是否已被注册 |
 | **密码加密** | BCrypt 加密后存储 |
 | **H2 内存数据库** | 开发阶段无需配置数据库，开箱即用 |
+| **全站统一编码** | Filter 统一设置请求/响应 UTF-8（实验十一） |
+| **在线人数统计** | Listener 统计登录在线人数，页面头部展示（实验十一） |
 
 ## 快速启动
 

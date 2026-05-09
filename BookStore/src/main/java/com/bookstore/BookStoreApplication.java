@@ -11,7 +11,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  * 继承 SpringBootServletInitializer 以支持外部 Tomcat 部署（Dynamic Web Project 方式）
  */
 @SpringBootApplication
-@ServletComponentScan("servlet")
+@ServletComponentScan({"servlet", "filter", "listener"})
 public class BookStoreApplication extends SpringBootServletInitializer {
 
     @Override

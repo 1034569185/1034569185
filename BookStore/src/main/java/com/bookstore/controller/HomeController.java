@@ -130,6 +130,7 @@ public class HomeController {
     @GetMapping("/user/logout")
     public String userLogout(HttpSession session) {
         session.removeAttribute("loginUser");
+        session.removeAttribute("username");
         return "redirect:/";
     }
 }

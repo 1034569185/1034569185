@@ -26,6 +26,7 @@
                     <a href="${pageContext.request.contextPath}/user/register" class="header-btn header-btn-primary">注册</a>
                 </c:otherwise>
             </c:choose>
+            <span class="header-online">在线人数：${empty applicationScope.onlineCount ? 0 : applicationScope.onlineCount}</span>
             <a href="${pageContext.request.contextPath}/Cart" class="header-cart" title="购物车">
                 🛒 <span class="cart-count">0</span>
             </a>

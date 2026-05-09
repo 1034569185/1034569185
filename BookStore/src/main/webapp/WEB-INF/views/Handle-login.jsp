@@ -35,6 +35,7 @@
             loginUser.put("username", rs.getString("username"));
             loginUser.put("role", rs.getString("role"));
             session.setAttribute("loginUser", loginUser);
+            session.setAttribute("username", rs.getString("username"));
             response.sendRedirect(request.getContextPath() + "/loginsuccess");
         } else {
             response.sendRedirect(request.getContextPath() + "/loginfail?message="

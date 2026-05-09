@@ -24,5 +24,7 @@
         <a href="${pageContext.request.contextPath}/" class="admin-top-link">前台首页</a>
         <span class="admin-sep">|</span>
         <a href="${pageContext.request.contextPath}/user/logout" class="admin-top-link">安全退出</a>
+        <span class="admin-sep">|</span>
+        <span class="admin-online">在线人数：${empty applicationScope.onlineCount ? 0 : applicationScope.onlineCount}</span>
     </div>
 </div>
